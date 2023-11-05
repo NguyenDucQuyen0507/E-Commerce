@@ -1,0 +1,14 @@
+ B1 Tạo store đầu tiên 
+ import { configureStore } from "@reduxjs/toolkit";
+    export const store = configureStore({
+  reducer: {},
+});
+B2 Ta export tất cả các api mà mình đã goi chúng trong folder apis
+export * from "./app_apis";
+B3 Ta tạo file tên là asyncActions (cụ thể là createAsyncThunk để mình gọi api ) là để gọi apis để lưu vào cho tất cả các fie khác đều nhận
+B4 là tạo file appSlice (cụ thể là createSlice) để thực hiện các thao tác khi gọi thành công api nó sẽ lưu vào trong state
+B5 Vào store để nhận giá trị appSlice
+B6 Ta sẽ dùng useDispatch của react-redux để dispatch nó, ta sẽ dùng useEffect,  dispatch ở đây là dispatch async thunk cái mà gọi dữ liệu từ server
+B7 Muốn sử dụng ở đâu thì vào components đó gọi cái mảng mà thằng appSlice đã truyền vào khi gọi dữ liệu thành công.
+  const { categories } = useSelector((state) => state.app);
+  .app là bên trong store mình đã truyền cho reducer là app : appSlice

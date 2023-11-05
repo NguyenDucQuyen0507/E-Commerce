@@ -1,0 +1,1213 @@
+ npm i react-router-dom redux-persist react-toastify moment.
+ Ở phần chia router ta coi kĩ phần Outlet trong public. Outlet là một nơi để chứa các đường dẫn con trong một đường dẫn lớn
+ * ở phần cấu hình axios
+B1 tạo một file để config axios
+B2 vào trang của axios chọn phần interceptor chọn phần đầu tiên coppy dán vào file để config
+B3 Sau đó chọn phần axios instance coppy phần đầu rồi dán vào
+B4 Ta tạo file .env để lưu địa chỉ của server. (REACT_APP_API_URL=  http://localhost:5000/api)
+B5 Vào lại file config tại chỗ hàm instance ta thay địa chỉ baseURL: process.env.REACT_APP_API_URL
+B6 Sau đó tạo một file app_apis trong folder apis dùng để export phương thức get để các file nhận vào
+B7 Nếu không thì chỉ cần gọi axios.get là cũng ok 
+ * Ta cần chú ý {NavLink} from "react-router-dom" dùng để chia navigation theo chìu ngang hay chìu dọc nó có một thuộc tính isActive dùng để active thẻ mà được click.
+ Đối với phần gọi api 
+ B1 Ta cần phải install cors vào server và cho phép client đưuọc truy cập để get api và cho phép các method  CRUD
+
+ * Đến phần làm cho product bestseller.
+ B1 ở phần apis để gọi product ta truyền vào một tham số là params để có thể get theo ý muốn của mình.
+ B2 gọi nó ra trong phần Home.jsx .Ở đây ta sẽ gọi api để lấy các sp có lượt bán nhiều nhất và ngày gần nhất.
+ const [bestSellers, newProduct] = await Promise.all([
+      //Vì ở bên apiGetProduct ta có truyền vào params làm tham số nên ở đây khi gọi mình cũng truyền vào params.
+      //sort ở đây là ở phần api mình đã query cho nó.
+      //-sold là lấy từ cao xuống thấp
+      apiGetProduct({ sort: "-sold" }),
+      apiGetProduct({ sort: "-createdAt" }),
+    ]);
+
+ * Ta làm tới phần khi clcik vào tab nòa thì nó sẽ chuyển màu là đã clcik vào chính nó
+ B1 ở phần nav ta dùng map để render ra màn hình.
+ B2 ta sẽ tạo một state để lưu giá trị là 1 thì nó sẽ tương ứng với id là 1.
+ B3 ta xử lý className
+    ${active == item.id ? "text-black" : ""} (item ở đây là tương ứng với từng giá trị khi map)
+B4 ta xử lý click kih ta chọn giá trị nào thì giá trị đó sẽ đổi màu là đã chọn nó.
+onClick={() => {
+    setActive(item.id);
+}}
+
+*Tiếp đó ta dùng react slick
+-Khi xử lý với các nút thì tìm và ghi đè class đó lên.
+button.slick-next::before {
+  color: red;
+  content: "\276F"; (ta vào trang toptal.com để lấy biểu tượng)
+}
+
+**line clamp tailwind dùng đê hiển thị lên 1 hàng (line-clamp-1)
+* Xử lý khi click vào nav này thì hiển thị khác, click vào nav kia thì hiểm thị khác bên sellers.
+B1 Ta tạo một mảng state rổng làm nơi chứa các sp chung của 2 loại sp
+B2 Lúc ta kt có sp nào có sold bán chạy thì mình cũng set cho mảng rổng đó đúng giá trị đó. Tương tự làm cho sp mới
+     if (bestSeller?.success) {
+        setBestSellers(bestSeller.products);
+        //cập nhật vào product để set active
+        setProducts(bestSeller.products);
+    }
+B3 Ta sẽ dùng useEffect để cập nhật lại active (active là dk để ta biết ta đang chọn nav nào để thay đổi dữ liệu) thay đổi thông qua dependencive là active. If(active ===1 tương ứng là đang ở nav có id là 1, nếu là 2 là tương ứng với id là 2 )
+  useEffect(() => {
+    console.log(active);
+    if (active === 1) setProducts(bestSellers);
+    if (active === 2) setProducts(newProductsDay);
+  }, [active]);
+Vì lúc đầu nó sẽ không có dư liệu là tại lần   useEffect(() => {
+    fetchProduct();
+  }, []); để gọi hàm fuction nó chưa trả về data kịp nên useEffect thứu 2 sẽ không có giá trị mặc dụ dk mình truyền vào là đúng.
+Nên ta xử lý truyền dữ liệu vào trong function xử lý gọi api product
+
+* Làm tới phần sao. Coi kĩ trong folder utils/helper
+
+* tiếp theo làm tới phần tim,option,mắt trong sp
+B1 tạo file components
+B2 Làm phần khi hover thì nó hiển lên. Ta sẽ tạo state là fasle là để ban đầu nó sẽ không hiện line
+B3 Khi có onMouseEnter là khi hover vào thì set nó là true, onMouseLeave là khi hover là bên ngoài là nó là fasle thì sẽ ẩn nó lại 
+
+* Làm tới phần thời gian quảng cáo bên sideBar ta đặt file có tên là DealDaily
+ Ta tạo một file compoent để duyệt qua  giờ phút giây
+ . Coi kỹ từng dòng code tính giờ.
+ . Khi ta dùng với setInterval ta luôn  phải clearInterval để tránh trường hợp khi bị unmout mà nó vẫn thực hiện phương thức
+ . Coi kĩ cơ chế của useEffect.
+ . Chỉnh giờ phút giây đúng như thật
+
+ * Đến phần NEW ARRIVALS là những sp mới sx là có createAt trùng với phần slick ở sellers. Nên ta sẽ dùng redux để gọi apis dùng chung chỉ một lần gọi api.
+ B1 ta tạo file asyncActions.jsx để thực hiện gọi api từ server và truyền vào tham số để lấy "-createAt" mới nhất.
+ B2 Tạo file appSlice để tạo mảng chứa dữ lieuj khi ta get thành công thì truyền vào mảng đó. Để export nó ra để Store nhận và dùng chung cho tất cả các components
+ B3 Vào file BestSellersNav.jsx gọi useDispatch để dispatch phương thức getProducts() trong asyncActions của products chúng useEffect trong lần gọi đầu tiên.
+ B4 gọi tiếp thằng useSelector để lấy dữ liệu của thằng products sau khi đã gọi api và truyền vào mảng trong appSlice. Và gọi appSlice trong Store chung.
+ B5 Gọi const { newProducts } = useSelector((state) => state.products); //products là key trong Store của appSlice
+
+Bai 31
+* Làm tới phần login, chúng ta sẽ tạo một components rieng cho ô intput và gọi nó vào trong file login.jsx.
+Coi kĩ cách truyền props
+ * Nút button submit ta cũng làm một component và truyền thông qua props
+
+Bài 32
+* làm tới bước xử lý api để đăng kí và đăng nhập
+B1  trong file login.jsx ta đã dùng useState đê lưu giá trị mặc định cho các trương mà mình cần để xử lý và ta đã truyền qua props để component InputField.jsx nhận giá trị 
+B2 để đăng kí thì ta sẽ gọi api của thằng user/register dùng method post và tham số là data ở file apis/user.jsx
+B3 Vào file login gọi nó ra. Trong phương thức handleSubmit ta phải lấy các giá trị được lưu trữ trong state.
+const { firstName, lastName, ...data } = payload;
+B4 Ta kiểm tra hiện tại đnag ở register hay login. Nếu đang ở register thì gọi api register và truyền vào params là payload là nó sẽ lấy hết giá trj trong payload. Nếu ngược lại đang ở login thì ta chỉ cần lấy email và password làm params. ta truyền vào params của login là data là ta sẽ bỏ firstName và lastName chỉ lấy các trường còn lại. 
+B5 ta sẽ dùng thư viện npm i sweetalert2 để hiển thị thông báo lỗi hay thành công. 
+*Lưu ý rằng khi dk thành công thì sẽ resetinput vầ chuyển đến trang trang của login. Thất bại thì chỉ hiển thị thông báo lỗi. Coi lỹ trong phương thức handleSubmit.
+* Làm tiếp tới phần Nếu đang ở trang login thì khi đăng nhập thành công thì dùng useNavigate của react-router-dom để chuuyren hướng sang trang Home. 
+
+Bài 33
+** Bây h ta sẽ dùng redux persist để lưu các các giá trị của user đang đăng nhập vào localStorage ở client.
+B1 Cài đặt redux persist:  npm i redux-persist và import storge từ redux-persist/lib/storage vào store chung.
+B2 Tạo một folder user trong store để xử dữ liệu và trong user có file là useSlice.jsx để xử lý trong reducer.
+B3 Vào store chung để xử lý lưu giữ giá trị mà mình cần lấy.
+B4 Dùng persistReducer để gọi config và user Slice và dùng persistStore để bọc store. Làm theo tài liệu
+.B4 Vào file main.jsx dùng PersistGate để bọc file <App/>. Làm thro tài liệu
+B5 Vào trang login để dispatch phương thức register từ userSlice.(import register và useDispatch ).
+B6 Khi ở form để đăng nhập nếu thành công thì dispatch register(khi kích hoạt register nó sẽ chạy vào userSlice để cập nhật lại các initialState bằng các giá trị mà login đã truyền cho nó) và truyền vào 3 than số mà userSlice đã tạo.
+
+** Đến phần làm xác thực email khii dk tài khoản (Làm ở server)
+B1 Ta cũng lấy các trường cần lấy để kt.
+B2 lưu các trường đó tạm ở cookie để chờ xác thực.
+  - trước khi lưu thì ta sẽ kt email đó đã đăng kí chưa rồi mới lưu
+B3 Tạo đoạn mã html khi gửi email nó sẽ hiển thị trên email của người đó, lúc này params là mã token ngẫu nhiên giành cho đk.
+B4 Vào utils/sendMail.js truyền thêm tham số là subject
+B5 Vào lại user.js trong phương thức forgotPassword truyền thêm subject và truyền tên vào cho nó vào data
+B6 tới phương thức register gọi sendMail để gửi tới email đó, ta truyền vào tham số là email,html,subject:"hoàn tất đawnh kí."
+B7 Vào postmen test ta truyền vào các trường khi dk tài khoản trong đó có email mà ta cần đăng kí, nó sẽ gửi html cho email đó.
+B8 trong đoạn html ta có truyền một đường dẫn (<a href=${process.env.URL_SERVER}/api/user/finalregister/${randomToken}>Click here</a>). Ta sẽ tạo phương thức của đường dẫn finalregister ở file route user.js và ta sẽ vào route tạo đường dẫn cho nó và nó có tham số id là :token với phương thức get.
+Test post men; http://localhost:5000/api/user/finalregister/5678c56b-82fb-4cd8-8ccb-9040e6bbd7a3, token là các mã mà nó trả về cho email đó ở client.
+-Bây h mình sẽ lấy token từ params để kt với token mình đã lưu trong bộ nhớ cookie. Nếu đúng thì mình lưu nó vào với object là: await User.create({
+    email: cookie?.dataRegister?.email,
+    password: cookie?.dataRegister?.password,
+    mobile: cookie?.dataRegister?.mobile,
+    firstName: cookie?.dataRegister?.firstName,
+    lastName: cookie?.dataRegister?.lastName,
+  });
+  * Quan trong ở đây là khi đăng kí thành công hay thất bại ta sẽ dùng một trạm chuyển trung gian để đưa người đó tới trang home hay là chuyển đến login để đăng kí lại.
+   if (newUsers) {
+    return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`);
+  }
+  .Nếu như đk sai thì nó sẽ gọi client và chuyển trang đến đường dẫn finalregister. ở đây finalregister là một trạm chuyển trung gian nên ta sẽ tạo một file cho nó ( ở bên client khi tạo ta cũng tạo trong router đường dẫn path đến trang đó và path phải trùng tên trong user server finalregister)
+  . Khi tạo path cho nó ta cũng lấy status bằng cachs
+  /:status vì bên server ta có truyfen vào trạng thái 
+  /failed . Để muốn lấy trạng thái đó thì ở client FinalRegister ta dùng useParams để lấy {status} khi return ta dùng Navigate để điều hướng trang đén trang login và truyền state là status để trang login sẽ nhận trạng thái là gì.
+  .ở trang login ta dùng useLocation để log ra hết tất cả những gì trên url gồm đang ở đường dẫn nào và state nó là gì để ta dựa vào state để bt đk có thành công hay không?
+  .Khi test khi ta gửi đến email đó thì khi click vào click here thì nó mới chuyển trang
+  .Khi có lấy được status ta sẽ dùng useEffect để kt xem trạng thái là gì để có thẻ chuyển đến trnag login ta sử dụng Swal để thông báo kết quả
+=> Test 
+B1 Vào trình duyệt đăng kí, khi dk thành công nó sẽ trả về những data mà mình tạo user và nó sẽ lưu vào cookie với các data mà mình đã điền. Và nó sẽ truyền đến email mà mình tạo vì trong server mình đã tạo phương thức Sendmail và mình truyền các đối số cụ thể.
+*Lưu ý phải sửa trong apis là true và server là true
+B2 Đăng nhập vào email khi ta click vào link đó thì bên server sẽ truyền đến thằng fianlRegister, trong finalRegister ta kiểm tra token mà mình lấy dc trên url so sánh với token mình đã lưu ở cookie so sánh. Khi so sánh xong nếu đúng thì server nó đã redirect đến client với finalregister là ta cũng sẽ tạo thêm file finalregister để nhận cái trạng trái từ finalregister ở server và client sẽ nhận trạng thái đó để thông báo là đk đúng hay sai
+-Lưu ý khi kt sai hya kt đúng ta cũng xóa thông tin trong cookie :  res.clearCookie("dataRegister");
+
+* Bây h chúng ta làm chức năng quên mật khẩu.
+B1 trong file login.jsx ta tạo model cho thằng quên maatk khẩu
+B2 Trong components client ta tạo một file tên reset-password mà thằng server forgotPassword đã định nghĩa. Trong path ta định ngĩa cho nó cả token /:token là vì server gọi nó và truyền cho nó một mã token
+B3 Trong api forgotPassword ta sửa lúc lấy email là từ body và dùng phương thức post, vì là người dùng nhập email nghĩa là post về cho server
+B4 Client ta tạo thêm phương thức apiForgotPAssword trong apis của user.
+Khi test, khi người dùng gửi eamail cho server, email đó phải có trong db, khi gưi eamil nếu hợp lệ thì nó sẽ tạo một resetToken và ResetExpires vào db. Vì trong server forgotPassword ta gửi sendMail nên email đó sẽ nhận được.
+Khi click vào link nó sẽ chuyển ta đến trang resetPassword.
+-Ta vào trang resetPassword.jsx để style cho nó là nhập mk mới. Vì ở trong api ta nhận email và token từ client về và ta đối chíu trong csdl và cập nhật lại password nên ta dùng phương thức patch.
+- Trên client trong apis của user ta tạo một api để đối chíu vào server.
+- Ở clinet resetPassword ta gọi api đó vào khi client submit thì ta truyền vào là password và token đã kasay từ url dưới dạng object. ok
+
+Bài 36 validate form
+B1 ta sẽ tạo một validate trong helper.jsx để ta chuyển đổi các object của các field input được lưu ở useState của login.jsx, nó sẽ trả về giá trị là số tương ứng với các field mà nó lỗi. Dùng Object.entries để chuyển các giá trị trong object thành từng mảng (xem kĩ trong code) Để ta có thể truy xuất vào mảng để ta đặt tên tương ứng với key và value đẻ thằng smal trong input truy xuất. 
+B2 Khi trong validate ta dùng một biến là setInvalidateField để cập nhật à đặt tên thì khi bên client Login.jsx ta gọi phương thức này ra và truyền 2 tham số tương tự validate(payload, setInvalidateField), payload ở đây là các giá trị trong object field input, setInvalidateField là một useState mảng đã tạo. Lúc này nó sẽ cập nhật cho thằng invalidateField.
+B3 Khi nó đã cập nhật cho invalidateField ta lấy giad trị này cập nhật props cho ô inputField và bên inputFiled sẽ cập nhật lại và và tìm kiếm để hiển thị lỗi.
+=> Luồng đi: tạo validate => login.jsx gọi validate truyfen tham số tương ứng sau đó truyền props vào inputField => inputField nhận giá trị và hiển thị lỗi.
+
+* Ta sẽ kiểm tra value của các field input hợp lệ hya không trong validate của file helpers.js. Ta dùng switch case để kt từng giá trị
+
+Bài 37 Lưu token ở dưới db chứ không lưu ở cookie nữa
+B1 Vào register của server sửa lưu ở db. Ta dùng btoa để mã hóa email khi lưu tạm vào db với mã token. Mục đích của mã token là kt xem user nào có mã token đnằg sau email đó không?
+Kt xem nếu đã lưu vào db thì gửi sendMail đến email đó.
+Ở Clien thì ta sẽ tạo một model kêu ng dùng nhập vào ô input. Dùng useState để nhận giá trị và useState để ẩn hiện model
+B2 Vào client định nghĩa phương thức apiFinalRegister để nhận token từ client gửi lên và gán vào vào path /user/finalregister/ để cho server có thể lấy được token từ params để kt,
+B3 Bên server finalRegister sẽ nhận được params từ client gửi lên và kt user nào có token đó và trả về dùng với phương thức (findOne({ email: new RegExp(`${token}`) }))
+B4 kt nó email đó không rồi cắt nó ra bằng split dể tách phần email với token và chuyển phần email về dạng ban đầu.
+B5 Sau khi đã mã hóa về dạng ban đầu ta sẽ lưu nó lại
+B6 Khi đã lưu tạm vào db thì ta sẽ kiểm tra xem trong 5phuts nếu nó tìm đúng email đã mã hóa đóa thì sẽ xóa nó đi khỏi Db (nghĩa là quá 5 phút mà người dùng chưa ãm hóa là sẽ xóa).
+
+Bài 38 xử lý khi đăng nhập thành công.
+B1 Vào apis user của client tạo một phương thức getCurrent từ server.
+B2 Tạo createAsyncThunk trong file asyncActions.jsx của users để gọi apis getCurrent từ user client.
+B3 Vào userSlice thực hiện phương thức extraReducers để gọi api getCurrent từ asyncActions sau đó sẽ các trường hợp thnafh công thì gán vào current.
+B4 Vào file topHeader.jsx để xử lý dispatch api từ asyncActions. Ta dùng useEffect để dispatch với 2 denpendencive bởi vì nếu k có denpendencive thì nó chỉ gọi một lần khi load trang chứ nó sẽ không gọi lại khi ta đăng nhập.
+ -Làm chức năng đăng xuất với redux chứ không dùng với api của Server
+ B1 Vào userSlice của user tạo thêm phương thức logout của reducer ta sẽ xét isLoging thành false và token thành null để nó xóa token đi
+ B2 Sang topHeader khi click vào Logout thì dispatch nó..
+
+ Bài 39 làm phần breadbrumb trong phần details
+  B1 ở trang productDetail ta dùng useParam để lấy id và title. Sau đó gọi api đẻ get theo pid vừa lấy và móc vào category, lấy category và title truyền vào props cho  file breadbrumb.jsx làm giá trị
+  B2 Vào file breadbrumb.jsx nhận 2 giá trị, dùng thư viện import useBreadcrumbs from "use-react-router-breadcrumbs"; để lấy theo đường dẫn url
+  B3 địng nghĩa route chứa đường dẫn 2 giá trị đó.
+  * Coi kĩ tài liệu 
+  B4 ta sẽ dùng filter để lọc ra giá trị nào có route theo như routes mà ta đã định dạng.
+  B5 Khi làm xuất hiện dấu mũi tên ta muốn mất nó ở cuối cùng. thì ta so sánh với giá trị index, nếu nó khác index tức nghĩa là chưa tới giá trị cuối cùng thì cho nó hiện. 
+
+  Bài 40 Chi tiết sản phẩm
+  Ta sử dụng một thư viện gọi là import ReactImageMagnify from "react-image-magnify"; để hover vào nó phóng to lên
+  B1 Khi productSeler bắn lên url theo như đường dẫn path: 
+    to={`/${productData?.category.toLowerCase()}/${productData._id}/${
+          productData.title
+        }`} nghĩa là nó lấy category,id,title của sp đó.
+  B2 đường dẫn đó là tới trang productDetail ta nhận tất cả có trên url từ useParams.
+  B3 productDetail là ta chỉ hiển thị 1 dsp thì trong server ta đã định nghĩa lấy 1 sp theo params mà ta đã gọi api đó trong apis/product.jsx.
+  B4 Ta chỉ cần gọi api đó và truyền vào pid mà ta đã lấy trên url là ta sẽ có 1 sp.
+  Khi viết với slider thì ta xét chìu rộng cho nó
+
+  Bài 41 Chi tiết sản phẩm làm phần tăng giảm quantity và cho phép người dùng nhập vào số lượng. Coi phần hanle khi xử lý tăng giẩm số lượng
+
+  Bài 42 Làm phần mô ta cho sản phẩm cho tiết ta cũng tạo một component tên là ProductInformation.jsx
+  Ta tạo một array trong contants để map nó ra trong đó có id của từng object dùng để xác định object nào đang được active.
+  *làm phần hiệu ứng border sẽ ẩn thi theo thẻ dc active thì cho nó class là relative bottom-[-1px] là nó sẽ ghi đè nó xuống.
+  Chú ý: làm tới phần CustomeSlider thì ta sẽ lấy theo category đó.
+  B1 fetchcate theo category lấy từ url của useParam()
+    const { pid, title, category } = useParams();
+    const response = await apiGetProduct({ category: category });, Vì trong server tôi đã query theo category và không phân biệt chữ hoa chữ thường
+  B2 ta truyền vào products của CustomeSlider.
+  B3 Khi nó hiển thị nó sẽ hiển thị luôn cái banner nên ta chỉ hiển thị banner ở trang Home và không hiển thị ở trang details.
+  B3.1 khi ở trang CustomeSlider ta truyền vào productSeler một giá trị normal.
+  B3.2 vào trang productSeler gọi normal và ràng buộc nó nếu normal là false hoặc !normal thì mới hiển thị banner lên.
+  B3.3 Vào productDetail truyền normal vào CustomeSlider là true nghĩa là thằng này là true thì sẽ không hiện banner lên. Vì banner ta đã ràng buộc là normal phải là false thì mới hiển thị. Khi ra trang home thì normal không có giá trị nên đồng nghĩa nó là normal
+
+  Bài 43 Làm product cho các category
+  B1 trong path.jsx ta định nghĩa PRODUCTS: ":category" làm params trên url
+  B2 Vào file App.jsx ta .PRODUCTS để tới trang product.jsx
+  B3 Khi đó ta click vào item trong sidebar nó bắn lên url tên category, khi dod trang product ta đã định nghĩa :category thì chính là params thì ta dùng useParams để lấy nó.
+  Làm phần hiển thị các sản phẩm theo category.
+  B1 Ta tải npm i react-masonry-css thằng này nó tự tạo layout có cả responsive 
+  B2 làm theo tài liệu
+  Làm phần filter
+  B1 Tạo một component (FilterSearch.jsx) để làm cho các nút.
+  B2 khi ta làm 2 nút thì ta sẽ gọi compoent đó 2 lần và truyền vào name là tên của nút đó.
+  B3 Khi đó thì FilterSearch.jsx sẽ nhận lại props là name và truyền name xuống.
+  B4 Đến phần xử lý khi click vào nút nào thì nút đó hiển thị lên chức năng của nó và khi click vào lần nữa thì sẽ ẩn đi.
+  B5 Vào bên Product tạo useState là null tạo phương thức handleActive để so sánh giá trị active với giá trị của handleActive từ props FilterSearch 
+
+  Bài 44 xử lý lọc sp,
+  Làm cho phần color trước
+  B1 ta sẽ tạo tạm một mảng color ở contants và map nó ra trong FilterSearch khi map ta cũng truyền vào input checkbox để khi onChange vào nó lấy giá trị tương ứng.
+  B2 trong input ta truyền vào value là các giá trị trong mảng. và một onChange .
+  B3 Tạo onChange để lấy từng giá trị. bằng find để tìm kiếm, filter để lọc và [...prev, e.target.value] là giữ lại giá trị cũ và thêm giá trị mới.
+  B4 lưu ý rằng trong input ta dùng checked để kt trạng thái checkbox, nghĩa là nó sẽ lấy true false để check.
+  B5 Khi ta click vào reset thì nó sẽ reset tất cả giá trị đã dc thêm vào mảng selected, nếu không có checked thì khi reset nó sẽ không mất các dấu checked trong input. Vfi thế ta dùng checked: checked={selected.some(
+(selectedItem) => selectedItem === el)}. Nếu có nó trong mảng thì dấu checked vẫn còn, còn nếu mảng rỗng thì dấu checked sẽ mất.
+  B6 khi click vào chữ reset thì sẽ reset lại mảng đồng thời ngăn chặn sựu lan truyền sự kiện từ thằng cha xuống thằng con. onClick={(e) => {
+                    e.stopPropagation();
+                    setSelected([]);
+                  }}.
+  - Bây h ta sẽ làm phần truyền giá trị vừa chọn lên url.
+  B1 import import { createSearchParams, useNavigate, useParams } from "react-router-dom";
+  B2 lấy url bằng useParams và định nghĩa lại useNavigate
+    const { category } = useParams();
+    const navigate = useNavigate();   
+  B3 Định nghĩa useEffect để xử lý đường dẫn trên url  
+   navigate({
+      pathname: `/${category}`,
+      search: `?${createSearchParams({ color: selected }).toString()}`,
+    });
+  pathname là trnag mà nó muốn đến, color là giá trị key ở url và selected là giá trị value dựa theo mình đã set các giá trị vào mảng.
+  ** Mục đích của việc setSelected((prev) => [...prev, e.target.value]); là để cho selected có các giá trị để mình có thể truyền lên url và dùng nó để gọi api.
+  Bây h ra file product nhận các parmas mà đã đưuọc truyền từ FilterSearch.
+  B1 dùng useSearchParams để lấy params trên url là các giá trị cần tìm (?color=white)
+  B2 ở useEffect 
+     //Dùng để xem giá trị đã lấy được ở params
+    let param = [];
+    for (let i of params.entries()) param.push(i);
+    console.log("param", param);
+    //bây h ta sửa lại tìm kiếm nhìu giá trị thì bên 
+    FilterSearch ta đã chuyển các giá trị trong mảng thành một string bằng join(",") và bên này nó sẽ nhận là  ['color', 'red,pink']
+    const queries = {};
+    for (let i of params) {
+      queries[i[0]] = i[1];
+    }
+    console.log(queries);
+    //Vì khi gán nó vào một đối tượng object thì nó sẽ tự động gán nó về dạng đối tượng javascript nên nó sẽ là {color:"red,pink"}
+    fetchProductCategory(queries);
+  **Lưu ý ở server ta phải query theo color là không phân biệt chữ hoa chữ thường.
+
+  __ Bây h ta mới sửa server cho ta tìm kiếm theo nhìu màu bằng phương thức $or
+    let colorQueryObject = {};
+  if (queries?.color) {
+    //B0 ta phải xóa color đã tìm trước đó
+      delete formatedQueries.color;
+     //B1 tách các giá tị cần tìm ra và nối nó lại thành mảng {color:"red,pink"}
+      // => [red,pink]
+      const colorArr = queries.color?.split(",");
+      console.log(colorArr);
+    //B2 map các giá trị đó ra và gấn và key
+    //trả về cho colorQuery là mảng chứa các object
+    //[ { color: { '$regex': 'black', '$options': 'i' } } ]
+      const colorQuery = colorArr.map((el) => ({
+        color: { $regex: el, $options: "i" },
+      }));
+    //dùng phương thức or trong mongoDb để tìm kiếm vì tìm thằng này không có thì tìm thằng khác
+      colorQueryObject = { $or: colorQuery };
+  }
+  const generalQuery = { ...formatedQueries, ...colorQueryObject };
+  __Khi sửa xong thì bên client khi click vào color để chứa vào mảng ta phải chuyển nó dạng "red,pink" bằng cách .join(",") để server nhận về và xử lý thành mảng để query
+  __Sau đó vào Products.jsx nhận params và truyền query vào apis.
+
+  Bài 46 xử lý query theo giá bằng use-debouce
+  B1 Tự config thư viện use-debouce
+  B2 Tạo useState để lưu trữ price và to
+  B3 Tạo 2 ô input để lưu trữ price và to xử lý onChange để lưu giữ giá trị cũ và thêm giá trị mới.
+  onChange={(e) => setPrice((prev) => ({ ...prev, to: e.target.value }))}
+  B4 Tạo useEffect dể xử lý createSearch truyền lên url.
+  B5 import useDebouce để làm dependencive cho useEffect. Ở trong useDebouce ta xử lý setTimeout để nó có thể gọi api sau khoảng thời gian cụ thể, useDebouce nhận vào 2 tham số là value và tg của setTimeout
+  __Làm phần query khi thay đổi giá ở FilterSearch 
+  //* Xử lý query theo from và to
+      let queryPrice = {};
+      console.log(queries);
+      if (queries.to && queries.from) {
+        queryPrice = {
+          $and: [
+            { price: { gte: queries.from } },
+            { price: { lte: queries.to } },
+          ],
+        };
+        //ta cũng xóa price nếu ta đã tìm xong
+        delete queries.price;
+      }
+    //*Xử lý query theo từng cái
+    //khi mình nhập from thì nó sẽ hiển thị trên url
+    //queries sẽ xử lý và mình sẽ lấy trường from chứa giá tiền
+    //tạo key price = với phương thức lơn hơn hoặc bằng với giá tiền vừa nhập vào.
+    //xóa giá trị from vì nếu hk xóa thì nó sẽ dính vào gte là nó sẽ như này
+    //{ from: '100000', price: { gte: '100000' } } thì query sẽ không được
+    //{ price: { gte: '1000000' } } ok
+      if (queries.from) {
+        queries.price = { gte: queries.from };
+        delete queries.from;
+      }
+    //query đến nhỏ hơn hoặc bằng
+      if (queries.to) {
+        queries.price = { lte: queries.to };
+        delete queries.to;
+      }
+    //Vì khi gán nó vào một đối tượng object thì nó sẽ tự động gán nó về dạng đối tượng javascript nên nó sẽ là {color:"red,pink"}
+    //price {from:"21 "}
+      const q = { ...queryPrice, ...queries };
+
+    * Làm tới phần sortby
+    B1 ta tải thư viện form của tailwind 
+    npm i @tailwindcss/forms
+    b2 Tạo một file trong component làm ô select dùng class "form-select"
+    b3 Tạo trong contant từng object chứa text,id và value của từng option, value ở đây là các key mà mình muốn truyền lên server để lọc thông tin cần thiết.
+    *Lưu ý: option thì luôn có value
+    b4 ở component select sortby nhận các props từ Product
+    b5 ta xử lý onChange khi ta xử lý là nó sẽ lấy value của option làm e.target.value.
+    b6 ở Product ta tạo useState làm value cho select và một handleChange để xử nhận giá trị từ sortby và cập nhật lại cho setSort.
+    b7 ở Product tạo useEffect để xử lý tạo url, url đưa lên có key là sort và giá trị là lấy được từ select option.
+    B8 khi đó thì nó sẽ dùng useSearchParams để lấy nó xuống sẽ là ["sort":"-sold"] và dùng for of để gán giá trị. khhi gán xong nó sẽ là {sort:"-sold"} và server sẽ nhận và xử lý
+    b9
+    b9 Dùng useEffect để nhận giá trị queries truyền vào featchApis để server nhận và xử lý rồi truyền ngược lại client render ra màn hình.
+
+    Bài 47,48 Đánh giá sản phẩm
+    * Xử lý ở productDetail khi click vào ảnh image slider thì nó sẽ thay thể ảnh.
+    B1 Tạo một useState để lưu giữ hình ảnh.
+    B2 Khi gọi apis detail ta sẽ truyền vào useState giá trị của ảnh đại diện là thumb khi gọi apis thành công.
+    B3 ở phần hiển thị ảnh đại điện ta truyền useState đã được lưu khi gọi apis.
+    B4 xử lý khi click vào ảnh. Trong lúc hiển thị dưới dạng slide ta truyền onClick thực hiện hành động truyền e và item, ở đây item là ảnh của chính nó khi ta click .
+    B5 Xử lý onClick nó nhận vào 2 tham số từ image và xử lý ngăn chặn lan truyền và set lại useState bằng chính ảnh mà thằng image đã truyền vào làm tham số.
+    * Làm đến phần hiển thị các chi tiết đánh giá.
+    B1 Tạo một component VoteBar.jsx
+    B2 Ở compoent ProductInformation ta xửa lại lúc hiển thị cho nút CustomerReviews. trong này ta chia làm 2 phần.
+    B3 Gọi nó với:
+     {Array.from(Array(5).keys()).reverse().map((el) => (
+                  <VoteBar
+                    key={el}
+                  />
+                ))} 
+    Nó sẽ render 5 component VoteBar
+    B4 Vào compoent VoteBar chia bố cục, chú trọng đến thanh phần trăm, ta tạo một thanh phần tranh màu trắng làm cha, trong cha đó ta tạo một thẻ tương tự làm con để ghi đè nó lên.
+    B5 Ta dùng useRef để lấy dom cần chỉnh sửa là ô phần trăm.
+    B6 Tạo useRef và gấn cho ô phần trăm mà ta muốn thay đổi.
+    B7 Sử dụng useEffect dể thay đổi "right" của ô phần trăm để nó thay đổi chiếm thoe tỉ lệ của thằng cha.
+    B8 
+     percentRef.current.style.right = ` ${
+      100 - Math.round((ratingCount * 100) / ratingTotal)
+    }%`;
+    percentRef là useRef của ô mình cần thay đổi .current là lấy dom của ô đó .style.right là thay đổi css cho thằng right. 
+    Ví dụ ta chia dc 40% là thằng right phải cách so với thằng cha là 60% nên ta lấy 100 -40 = 60%. Lúc này right có css là 60% là nó cách 60% về phía trái.
+
+    *HAY Làm phần người đánh giá và số sao với modal
+    B1 Sửa lại data products là totalRating sẽ là 0.
+    B2 Gọi api từ server vào file apis/product
+    B3 ta tạo một modal bao quanh tất cả ta sẽ truyền nó vào file App.jsx
+    B4 Dùng redux để lưu. Ta cần có 1 biến dùng để bật tắt modal và 1 biến dùng để hiển thị nội dung bên trong modal. Ta vào appSlice.jsx của category để xét.
+    B5 xử lý trong reducer {
+      showModal: (state, action) => {
+      state.isShowModal = action.payload.isShowModal;
+      state.modalChildren = action.payload.modalChildren;
+    },
+    }
+    B6 Lấy ra 2 biến từ initialState của appSlice để thực hiện từ file App. Thực hiện để giúp hiển thị Modal và truyền vào modalChildren trong modal làm giá trị trong modal.
+    B7 truyền relative trong thằng chứa tất cả các routes để cho Modal bao quanh App
+    B8 ta sẽ dispatch 2 giá trị trong initialState. Vào file ProductInformation showModal trong reducers của thằng appSlice.
+    B9 Trong button ta dispatch trong handleClick 
+    handleClick={() =>
+                  dispatch(
+                    showModal({
+                      isShowModal: true,
+                      modalChildren: <ModalVoteOptions />,
+                    })
+                  )
+                }
+    Ta set lại isShowModal thành true, modalChildren là phần tử nằm trong modal.
+    Khi đó thằng Modal.jsx sẽ nhận một props là children để nhận ModalVoteOptions làm giá trị bên trong.
+
+  ** Luồng đi sẽ là: Tạo reducer trong appSlice của category. Trong ProductInformation gọi reducer ra và dispatch để set lại 2 giá trị là
+   isShowModal: true,
+   //isShowModal là hiển thị modal
+   modalChildren: <ModalVoteOptions />,
+   //modalChildren là giá trị bên trong modal.
+   Vào App.jsx dùng useSelector để nhận 2 giá trị đã được set lại từ dispatch để hiển thị modal và truyền children. Cuối cùng là tromg modal ta nhận props là children và truyền children trong return.
+   B10 xử lý trong modalOption.
+   B11 hiển thị các sao đánh giá thì ta sẽ tạo một array trong contant chứa id từ 1 đến 5 tương ứng với 5 cấp độ đánh giá.
+   Trong file ProductInformation ta tạo một useState để lưu giá trị Id.
+   Khi onClick vào star ta set lại giá trị id
+    onClick={() => setChosenStar(el.id)}
+   Lúc hiển thị ta kt id mình vùa xét có lơn hơn hoặc bằng giá trị của các í còn lại không, nếu lơn hơn hoặc bằng thì các id nhỏ hơn sẽ có màu vàng và các id lơn hơn sẽ có màu xám.
+   * Bây h ta sẽ làm phần lấy comment và id của sao. Thằng nhận được giá trị là thằng chứa modal đánh giá.
+   b1 Vào thằng ProductInformation định nghĩa một phương thức để log giá trị từ thằng modal
+   B2 ta truyền phương thức đó vào props của ModalVoteOptions.
+   B3 ModalVoteOptions nhận được trong onClcik submit ta truyền handleClick là phương thức mới nhận được từ props ta truyền giá trị của comment và gia trị của star
+   handleClick={handleScore({ comment: comment, score: chosenStar })}
+   B4 Lúc đó thì thăng ProductInformation sẽ log giá trị ra có tham số là value.
+   B5 Ở bên server ta làm ratings là nó sẽ nhận 3 tham số từ ng dùng là star,comment và id của sp đó khi thực hiện đánh giá thì phải có token nghĩa là người dùng phải đăng nhập trước khi đánh giá.
+   B6 vì thế ở client khi người dùng click vào submit thì kt isLoggedIn, isLoggedIn là lấy từ appSlice của user khi người dùng đang nhập thành công no sẽ là true. Dùng Swal để xuất hiện hộp thoại chuyển trang.
+   ** Coi lại trong ProductInformation
+   B7 Nếu đã đăng nhập thì dispatch showModal truyền vào 2 tham số 
+    showModal({
+          isShowModal: true,
+          modalChildren: (
+            <ModalVoteOptions
+              nameProduct={nameProduct}
+              handleScore={handleScore}
+            />
+          ),
+        }) isShowModal: true là để khi ta click vào thì sẽ xuất hiện modal, modalChildren là truyền vào children cho modal ở file App và modal sẽ nhận props là children tương ứng thành phần xuất hiện ở trên modal.
+      handleScore là truyền vào cho file ModalVoteOptions xử lý lấy dữ liệu comment và star khi nhấn submit nó sẽ mang 2 giá trị đó cho thằng cha là ModalVoteOptions nhận lại để thực hiện gọi apis truyền 2 tham số vừa nhận được từ thằng con
+       const response = await apiRatings({
+        star: value.score,
+        comment: value.comment,
+        pid, //là id của sp detail dc truyền thông qua props
+      }); 
+      Khi gọi thành coong nó sẽ cập nhật lại product đó có ratings là các tham số vừa truyền.
+
+      * Bây h làm phần render lại người reviews và phần trăm cho cái ô 1 sao 2 sao,...
+      B1 phần totalRating thì ta truyền thông qua props.
+      B2 Hiển thị bao nhiu ngời đánh giá là lấy mảng ratings.length là có bao nhiu object là bấy nhiu người.
+      b3 Đến thanh phần trăm là VoteBar là sẽ bẳng tổng số các sao / số người đánh giá.
+      Nên ta truyền props cho VoteBar là 
+        ratingTotal={ratings?.length}
+        ratingCount={
+            ratings?.filter((i) => i.star === el + 1)?.length
+              }
+      ratingTotal là số người đánh giá. 
+      ratingCount là số sao bằng số number nghĩa là nếu number là 5 và nếu số star đó cũng là 5 thì sẽ trả về mảng chứa số 5 đó và .length thì có bao nhiu star trùng với number là cho vào .length là nó đếm có bao nhiêu số sao tương ứng. Khi đó nó sẽ xét phần trăm tương ứng cho số sao đó
+      b4 Bên VoteBar nhận lại 2 giá trị và thực hiện chia.
+      b5 ta sẽ đề phóng nếu 2 tham só ratingTotal và ratingCount thì nó sẽ lấy là 0.
+      const percent = Math.round((ratingCount * 100) / ratingTotal) || 0;
+      B6 * quan trong, khi ta sumbit xong thì ta sẽ tắt modal đi và reload lại dữ liệu ở trnag productDetail.
+      B6.1 khi ở trang productDetail ta tạo 1 useState là false.
+      B6.1 tạo một phương thức dùng useCallBack để set lại useState thành true vầ truyền nó đi.
+      b6.2 dùng useEffect để thay đôi theo true fasle mà nó sẽ gọi lại product.
+      b6.3 ta sẽ truyền phương thức useCallBack đó cho ProductInformation.
+      b6.4 ở productDetail sẽ nhận lại phương thức đó và khi sumbit ta chỉ cần gọi nó thì thằng productDetail sẽ thực thi.
+      re_rednder();
+      
+Bài 50 Hiển thị nhận xét
+** Quan trọng là nó xảy ra lỗi khi đăng nhập thành công mà lúc ta hiển thị tên thì là underfine là nó chưa kịp gọi tới api mà nó đã render nên nó sẽ không thấy được data.
+Nên ta sẽ timeout cho nó khoảng 3ms để nó chọc zô data.
+   if (isLoggedIn) {
+      const setTimeoutId = setTimeout(() => {
+        dispatch(getCurrent());
+      }, 300);
+      return () => {
+        clearTimeout(setTimeoutId);
+      };
+    }
+** Xuất hiện lỗi nữa là nó thêm 1 ngôi sao do hàm renderStarNumber chưa làm tròn số. Ví dụ nếu nhập vào 3.5 thì nó sẽ thành 4 ngôi sao vàng và 2 ngôi sao trắng là do nó kiểm tra số 3 vẫn thảo mãn dk nên có tận 4 ngôi sao.
+Fix bằng cách làm tròn 3.5 thành 3 
+number = Math.round(number);
+- Bây h làm phần hiển thị bình luận.
+B0: Vào model của products trong phần ratings thêm là updateAt là thời gian mà người dùng comment
+B1 tạo một component tên là comment nhận vào các props từ ProductInformation.
+B2 Trong comment ta import moment để xử lý thời gian {moment(updateAt)?.fromNow()} fromNow là tính số thời gian đã comment (15 phút trước).
+B3 Vòa ProductInformation truyền props thông qua comment.
+B4 Ta vào user thêm modal avatar, vào modal của product ratings thêm updateAt để theo dõi thời gian comment
+B5 Vào controller product ratings thêm updateAt trong $set khi cập nhật và trong push khi thêm vào.
+B6 ở ProductInformation khi gói apiRatings ta truyền updateAt: Date.now() để server nhận được và xử lý.
+Cuois cùng ta truyền
+
+Bài 51 Phân trang
+B1 tạo một components Pagination.jsx
+B2 Tạo hook usePagination.jsx 
+***Lưu ý thoe dõi từng dòng code 1
+B3 tạo component PagiItem để lưu các số.
+B4 Khi ở trang Product ta truyền props cho Pagination là tổng số lượng sp là counts.
+B5 bên Pagination nhận counts đó, mục đích là để truyền vào hook trong usePagination để nó tính toán và hiển thị số thứ tự [1,2,3,4,5].
+B6 trong Pagination ta khởi tạo phương thức để lưu trữ usePagination vì usePagination ta đã return nó là một mảng []. nên khi ta sử dụng map để truyền các số trong mảng cho PagiItem để nó render ra màn hình dưới dạng là children.
+B7 ở PagiItem ta sẽ css cho dấu ... bằng cách import dấu ... ở trong usePagination. Và ta sẽ kt !Number(children) là tương tứng dấu ...
+B8 Bây h ta sẽ dùng createSearchParams để tạo url
+B8.1 Dùng useSearchParams để lấy params về khi nó truyền lên.
+B8.2 Dùng useNavigate để nó đứng tại trang đó.
+B8.3 Dùng useParam để lấy category 
+B8.4 Dùng createSearchParams dể tạo url. 
+=> Khi nó chạy nó tạo param theo số mà nó click. Khi có trên url thì thằng Product sẽ nhận bằng useSearchParams rồi truyền nó vào api product. Trong server product ta đã kt page của nó nên khi ta truyền page lên nó sẽ xử lý lấy sp theo page đó.
+B9 làm chức năng khi ta clcik vào page thì page sẽ nổi bật hơn. ta dùng params.get("page") để kt
+* ${+params.get("page") === children ?} có dấu + là nó phải là số có bằng với số mà mình vừa click hay không.
+B10 Kiểm tra khi chưa click vào page thì nó sẽ là 1 thì page 1 sẽ hiển thị nổi bật.
+* ${
+  !+params.get("page") && +children === 1 && "rounded-full bg-gray-300"
+  } 
+Nó sẽ kt nếu không page nào nghĩa là người dùng chưa click đồng thời children ===1 vì trong server tôi đã cho page ===1 nếu người dùng chưa click thì nó sẽ css cho thằng đầu tiên.
+-Bây h ta làm phần hiển thị số lượng sp trên một trang trên tổng số lượng sp.
+Kiểm tra khi người dùng click vào page 
+  {+params.get("page") && (
+        <span className="italic">
+          {`Show products ${range()} of ${totalCount} products`}
+        </span>
+      )}
+Ta sẽ set hàm range() 
+  const range = () => {
+    //lấy trang mà ng dùng vừa click
+      const currentPage = +params.get("page");
+    //đặt số product khi nó hiển thị lên
+      const pageSize = +process.env.REACT_APP_PRODUCT_LIMIT || 10;
+    //số product bắt đầu
+      const start = (currentPage - 1) * pageSize + 1;
+    //số product kết thúc dùng in để lấy số nhỏ hơn
+      const end = Math.min(currentPage * pageSize, totalCount);
+      return `${start} - ${end}`;
+  };
+
+Bài 52  Filter theo nhiều params
+  ** Bây h ta sẽ fix lỗi search được nhiều cái.
+B0 ta phải lấy [params] từ url để có thể lấy hết tất cả các query tìm kiếm
+B1 ở useeffect của thawfg color ta sẽ duyệt qua hết params. Kiểm tra nó lớn hơn 0 là kt có bao nhiu color và sẽ chuyển nó về string và cập nhật lại page =1. Và ngược lại thì xóa queries.color (là khi người dùng nhất reset thì tương ứng với select < 0 thì chỉ xóa color và giữ các tìm kiếm khác).
+B2 với useffect của price thì cũng xóa queries.from và color khi nguwoiuf dùng click reset. và quay về trang 1 khi tìm kiếm qua page khác nếu item không vượt quá page 1
+**//Khi ta ở trang 2 mà sp chỉ có đủ cho trang 1 hiển thị thì ta sẽ cho nó về lại trang 1
+Bai 53 Setup cách IMPORT tuyệt đối trong Create-reate-app
+b1 Tạo một file trong thư mục my-app là jsconfig.js
+b2 config là: 
+{
+  "compilerOptions": {
+    "baseUrl": "src"
+  }
+}
+Lúc này ta chit cần import là "store/fsd"
+
+Bài 54 Fix bug khi access token hết hạn 
+- Fix lỗi khi đã hết hạn token nhưng nó vẫn lưu token dưới localStorage.
+B1 Vào useSlice của users ở phần extraReducer khi getCurrent false thì ta sẽ sét lại isLoggedIn = false và curretn: null nghĩa là không còn giá trị thì nó sẽ hiện login.
+- Fix lỗi khi sử dụng redux persist có warning không phải là object.
+B1 Vào trang redux persist phần Working with Non-Serializable Data ta copy middleware dán vào store cua mình và import những thứ có trong ignoredActions.
+- Fix lỗi khi hết thời gian token thì sẽ thông báo hết phiên đăng nhập.
+B1 trong useSlice của user ta tạo thêm một initialState là mes:""
+B2 Khi Login hết hạn thì nó sẽ chạy xuống reject và ta sẽ cập nhật lại mes có lỗi là gì đó.
+B3 vào topHeader ta sẽ lấy mes từ state.user.
+B4 dùng useEffect đẻ kt có mes hay khong và thông báo lỗi bằng swal.
+Nhưng nó sẽ gặp lỗi là khi người dùng không muốn đăng nhập nhưng nó vẫn hiện lỗi vì lúc này lỗi chưa được reset.
+B5 vào reducers của useSlice tạo một phương  thức để reset lại mes để có thể dispatch.
+B6 Trước khi người dùng nhấn ok đê chuyển trang đến login thì ta sẽ dispatch nó.
+
+Bài 55 Tạo layout cho admin
+Trong folder admin ta cũng tạo các file cần thiết, sau đó trong file path ta định nghịa đường dẫn cho nó. Tương tự làm với member.
+Trong file app.jsx ta định nghịa 2 route nằm trong routes để tạo đường dẫn.
+Sửa lại role là số sẽ hay hơn là một role cụ thể.
+-Fix khi người dùng chờ cái j đó thì có hiệu ứng loading
+B1 npm i react-spinner
+B2 Tạo file loading.jsx. Sau đó import hasloader từ spiner.
+B3 Vào file Login khi đang là form register trước lúc có dc resonse thì ta sẽ dispatch modal và truyền loading cho modal đó, Khi đã nhận response thì modal trở về trạng thái ban đầu.
+-Làm tiếp phần nếu role này thì zô trang này role kia thì zô trang kia.
+B1 ở trang AdminLayout ta sẽ lấy current để check role có phải là admin hay không. Nếu không phải thì sẽ chuyển sang trang login khi người dùng không phải là admin.
+B2 ở trang member thì chỉ cần người dùng đã dk rồi đăng nhập thì sẽ zô được, còn nếu chưa dk mà đăng nhập thì sẽ chueyren hướng tới login.
+B3 Ở trang header ta sẽ kt điều kiện khi người dùng click vào profile nếu là member thì sẽ đến trnag member còn nếu là admin thì sẽ đến trang admin.
+  to={
+      current?.role === 1
+      ? `/${path.ADMIN}/${path.DASHBOARD}`
+      : `/${path.MEMBER}/${path.PERSIONAL}`
+      }
+**Lưu ý là khi lưu dưới localStorage thì ta lưu cả current derded kt role nó là gì trong store redux phần Whitelist.
+
+Bài 56 Admin Sidebar 
+- config thư mục trong components.
+ - Trong file App.jsx ta tạo 2 route bao quanh các route nhỏ, route lớn ta sẽ path tới trang AdminLayout
+b1 Làm trang cho admin, tạo SideBarAdmin.jsx và Outlet trong file AdminLayout.jsx. Outlet là các phần tử mà có ther thay đổi nằm trong route thuộc route của AdminLayout.
+b2 Khi ta kích vào profile thì nó sẽ kt role thì nó sẽ chạy zô trang AdminLayout, phân vân ở đây là tại sao ta truyền path là /${path.ADMIN}/${path.DASHBOARD} mà nó vẫn chạy zô 1 trang là vì trong trang AdminLayout ta chia 2 phần là SideBarAdmin và Outlet thì Outlet là các thay đổi còn sideBar là cái cố định.
+b3 Khi ta map các thành phần trong SideBarAdmin thì trong contant ta sẽ tạo các tên và path cụ thể.
+b4 khi map nó sẽ có 2 kiểu là single và parent coi kĩ trong phần map trong SideBarAdmin.
+b5 Đối với parent khi ta kich vào thì nó mới hiện 2 thành phần con.
+b5.1 ta sẽ tạo một useState là mảng để chứa id của thằng đó khi ta click vào thằng parent thì ta sẽ truyền id đó vào phương thức.
+b5.2 xử lý phương thức đó, sẽ tìm trong mảng (dùng some để tìm kiếm nếu có số đó trong mảng là đúng) có thằng id đó không, nếu có thì true, sau đó sẽ xóa thằng đó khỏi mảng bằng cách lọc những ra những thằng còn lại, còn nếu chưa có thì thêm nó vào mảng trong useState.
+b5.3 khi kt để hiển thị các children nằm bên trong parent thì ta sẽ dùng some để kt id đang chứa có bằng với id của thằng cha hya không, nếu có thì sẽ hiển thị lên.
+
+Bài 57 quản lý user
+> Lúc get users thì trong server ta cũng làm tương tự như products là sẽ get theo params nên trong get users ta sẽ làm products
+> Ta phải tạo nhìu users mà không cần phải chờ gửi mail bằng cách tạo một mảng chứa nhìu users ứng với các filed lúc đăng ký. 
+> Trong controller của ta dùng create và truyền mảng đã được import vào User.create(users). > Ta cũng tạo đường dẫn router cho thằng create.
+> Trong insert.http ta tạo một send request dẫn tới thằng tạo user đó POST http://localhost:5000/api/user/mock.
+ - Đến phần hiển thị ra users 
+ B1 Ta sẽ tạo một apis cho user bên client
+ B2 Vào trang manageUser ta gọi apis đó ra và lưu vào một useState mảng.
+ B3 Hiển thị dưới dạng table, khi map ra thì ta sẽ map vào users nơi chứa các user, ở phần role thì ta tạo một contant để đối chíu role trong user và hiển thị ra role là của ai.
+ **Lưu ý ta sẽ chuyển role về dạng số (+)
+ B4 Dùng moment để định kiểu lại ngày tháng cho createAt.
+
+ Bài 58 Quản lý thành viên 2
+ -Làm thanh input để tìm kiếm.
+ B1 Ta import component inputField vào manageUser.
+ B2 Gọi component và truyền các props cần thiết. Ở đây ta truyền dưới dạng object cho giá trị value, nên ta lưu state là 
+   const [queries, setQueries] = useState({
+    search: "",
+  });
+  B3 Input truyền sẽ là: 
+    <InputField
+            nameKey="search" //nameKey phải trùng với giá trị value
+            value={queries.search}
+            setValue={setQueries}
+            placeholder={"Search name users..."}
+            style
+            isHideLabel={true} // dùng để ngăn chặn hiệu ứng
+          />
+  B4 Bây h ta sẽ xử lý tìm kiếm ta muốn khi ta gõ xong nó mới gọi apis để tìm kiếm. Thì ta dùng useDebouce truyền vào value và thời gian để gọi apis.
+  B5 import useDebouce truyền vào value là queries.search.
+  B6 trong useEffect khi gọi apis ta truyền object làm tham số, kt nếu có useDebouce thị tạo key và truyền giá trị làm value cho key và truyền xuống apis.
+  B7 Nếu không có thì nó get hết users.
+  B8 Ở server ta sẽ nhận key mà client vừa truyền để xử lý. Ở server ta sẽ dùng phương thức $or dể xử lý, khi tìm thì ta truyền  key trùng với key trong model User để nó tìm kiếm.
+  - Tiếp tục làm với phân trang cho user.
+  B1 Trong manageUser ta truyền props vào Pagination là counts của user.
+  B2 Vào Pagination ta truyền props đó vào hook usePagination.
+  B3 Ở trong PagiItem ở phần tạo url trong navigate ta dùng useLocation sau đó .path để giữ lại url chính nó và chỉ thay đổi page
+  B4 Ta sẽ xử lý .env thì sẽ gặp lỗi bên product.
+  B5 Ở trang manageUser ta sẽ dùng useSearchParams để lấy params từ url, trong useEffect ta sẽ lấy prams đó ra và lưu trong queries, các params là page đã đưuọc truyền ở PagiItem.
+  B6 ở server khi get user ta có page nên nó sẽ nhận page và xử lý .
+
+  Bài 59 Chỉnh sửa thành viên với react-hook-form.
+  B1 npm install react-hook-form
+  B2 Tạo component input và select dể ta có thể hiện giá trị cần chỉnh sửa trong ô input.
+  B3 Khi ta click vào editForm thì sẽ có data của thằng đó. Vì thế trong phần tbody ta sẽ kt trong editForm có trùng với các users đang map ra không, nếu có thì hiển thị ô intput để chỉnh sửa, nếu không thì hiển thị giá trị data thôi.
+  B4 Ta import useForm từ react-hook-form sau đó gọi nó ra và truyền trong useForm các giá trị mà mình muốn sửa đổi
+  B5 Bây h ta sẽ lấy những giá trị được truyền xuống từ manageUser cho inputForm, ở inputForm ta nhận là các 
+      input
+        type={type}
+        id={id}
+        {...register(id, validate)}
+        placeholder={placeholder}
+        disabled={disabled}
+        defaultValue={defaultValue}
+        className={clsx("form-input text-sm", fullWidth && "w-full")}
+      />
+      {errors[id] && (
+        <small className="text-xs text-main">{errors[id]?.message}</small>
+      )} Đây là các giá trị nhận từ manageUser.
+    ở thằng manageUser ta truyền sẽ là 
+     register={register}
+     //register là các sự kiện làm thay đổi ô input được viết ngắn gọn là: ...register
+      errors={errors}
+      ddefaultValue={editForm?.firstName}
+      //giá trị của nó khi ta nhấn vào edit
+      id={"firstName"}
+      //id là tương ứng với giá trị cần thay đổi
+      fullWidth
+      validate={{ required:fill!" }}
+* Coi tài liệu react-hook form phần useForm.
+-Bây h ta sẽ làm phần update User
+B1 Ta sẽ log ra bằng cách bọc table vào form gọi onSubmit trong form bằng với handleSubmit và truyfen trong handleSunmit phương thức mình lấy dữ liệu.
+B2 Ta sẽ tạo một apis user là update từ server truyền vào data và id.
+B3 trong phương thức handleUpdate ta gọi apis đó và truyền vào data và id mà mình đã lấy được trong lúc editForm. Khi thành công ta sẽ setEditform về lại null để nó mất các ô được chọn. Khi update thành công ta sẽ cập nhật lại api, bằng cách tạo một useState dạng boolean.
+B3.1 Sau đó ta tạo phương thức cập nhật lại kiểu boolean đó, trong useEffect ta truyền vào denpendencive là kiểu boolean dể mục đích khi ta gọi phuoeng thức cập nhật kiểu boolean làm thay đổi giá trị thì useEffect sẽ gọi lại  api và render lại dữ liệu.
+B4 Làm chức năng xóa User
+B4.1 trong server xóa user ta chỉ lấy uid từ params thì trong route ta tạo đường dẫn delete là "/:uid"
+B4.2 Ở client ta tạo api delete truyền vào uid.
+B4.3 ở trang manageUsers ta tạo phương thức delete nhận uid từ nút delete. Hiển thị thông báo có xóa hya không bằng Swal khi nhấn ok thì gọi api delete và dùng toastify để thông báo đã xóa thành công.
+
+Bài 60 Làm phần select khi click vào nút edit
+B1 Vào component select nhận các giá trị tương tự như inputForm ở đây select là register là nó lấy giá trị value của option để thay đổi.
+B2 Nó có một option là array để ta map tất cả giá trị ra mà ta đã định nghĩa ở contants. Trong options ta phải truyền value là giá trị mà ta dùng để kt.
+B3 Bên phần manageUsers ta truyền options là mảng được tạo trong contants.
+
+Bài 61 Tạo sản phẩm (Admin) 
+B1 Trong trang createProducts ta cũng dùng useForm để xét các dữ liệu.
+B2 Tạo form bọc các thẻ input lại với nhau. Tạo 4 thẻ input và truyền vào các props cần thiết (title,price,quantity,color).
+B3 đến phần select trong phần ontions của thằng title, ta sẽ lấy dữ liệu categories đã lấy dc từ redux. Ta dùng nó để map ra lấy _id và title truyền vào 2key là code và value tương ứng với props select.
+B4 Đến phần select brand thì khi ta click vào title nào thì sẽ hiển thị brand của title đó. 
+B4.1 ta dùng watch trong useForm để lấy id của thằng vừa click bằng cách truyền vào watch cái id="category" của thằng title.
+B4.2 Ta sẽ tìm kiếm find có id nào bằng với id vừa click với watch("category") nếu có thì trỏ tới brand rồi trong brand ta map và truyền dữ lieuj vào 2 key là code và value
+
+options={categories?.find((el) => el._id === watch("category"))?.brand?.map((el) => ({ code: el, value: el }))}
+=> Lúc này khi ta click vào title nào thì nó sẽ hiện lên brand của title đó
+B5 Làm nút button để click tạo product 
+*Lưu ý phải truyền type=""submit" để có thể lấy dữ liệu trong ô input.
+- Khi ta submit thì lúc lưu category thì lưu dưới dạng id là vì ở select ta truyền code là id nên nó sẽ lưu là id. Vì thế trong lúc có dc data thì ta sẽ gán id đó về lại title của id đó
+ if (data?.category) {
+      data.category = categories.find((el) => el._id === data.category).title;
+    }
+
+Bài 62 Tạo sản phẩm (2)
+Làm phần markwown để ghi description.
+B1 Ta vào trang mce tiny đăng kí tài khoảng và lấy mã id được cấp dán vào .env.
+B2 tạo components markdownEditor.jsx copy mã trong trang mce tiny react.
+B3 Ta dán id vào apikey và thay đổi giá trị giống như inputField, cả thông báo lỗi cũng giống nhau.
+B4 ta import markdownEditor vào trong createProducts truyền vào props là 
+          <MarkdownEditor
+            name="description"
+            value=""
+            changValue={changeValue}
+            invalidateField={invalidateField}
+            setInvalidateField={setInvalidateField}
+          />
+Ta tạo useState dể chứa payload, tạo thêm phương thức changeValue để log giá trị trong markdown ra.
+Lưu ý giá trị trong payload phải trùng với name ta truyền trong props. Để ta kt lỗi. 
+Để hiển thị được lỗi cho thằng markdown ta import validate trong utils ta truyền vào 2 đối số là payload và setInvalidateField, payload là để nó tách thành array để cho thằng setInvalidateField gán giá trị cho nó.
+Trong phần hiển thị lỗi thì ta kiểm tra bằng invalidateField đã dduojc cập nhật từ setInvalidateField.
+- Bây h đến phần làm ảnh cho products
+Ta tạo 2 ô input có 2 label.
++ Input đầu tiên ta truyền id và type='file'(là dùng để lấy file ảnh), truyền register, nó sẽ lấy id làm key để lưu trữ ảnh. (Dùng để làm ảnh đại diện cho sp)
++ Input 2 cũng truyền id và type="file" và register, và truyfen thêm multiple là cho phép chọn nhìu ảnh.(Các ảnh để thay thế).
+*+ Trong hàm create Product có 4 đoạn code là
+  const finalPayload = { ...data, ...payload };
+  const formData = new FormData();
+  for (let i of Object.entries(finalPayload))
+   formData.append(i[0], i[1]);
+  * Mục đích của đoạn này tạo ra một mảng chứa nhìu object trong object có key và value của thằng finalPayload.
+  * Lúc này thì formData sẽ có giá trị để truyền qua apis.
+  - Riêng phần thumb và images ta sẽ config khác để đưa cho formData
+Bài 63 Preview images
+B1 Vào trang file to base64 js chọn cái đầu tiên dán vào file helpers.jsx
+B2 Vào trang createProducts tạo useState dùng để chứa thumb và images.
+B3 Tạo handlePreview nhận đối số và sau đó gọi phương thức getBase64 từ helpers.jsx để chuyển đổi, sau đó cập nhật lại thumb
+B4 gọi useEffects và truyền vào giá trị thumb là ảnh mà mình chọn bằng watch("thumb"[0]) để nó lấy giá trị đầu tiên.
+B5 Phần render ta rangd buộc nếu có preview.thumb thì mới hiển thị ảnh và ảnh được lấy từ src = {preview.thumb}.
+- Hiển thị nhìu ảnh.
+B1 Ta tạo một phương thức handle tạo một mảng và lặp qua đối số truyền vào để ta lấy được tất cả các file ảnh trong object.
+B2 Ta kt tất cả ảnh trong object có phải đúng định dạng ảnh hay không.
+B3 Nếu hk có thì ta gọi getBase64 và truyền vào giá trị được lặp qua. sau đó push nó vào mảng đã đưuọc khởi tạo.
+B4 Thoát khỏi vòng for ta set lại images trong useState bằng giá trị vừa push vào mảng.
+B5 Cuối cungd ta dùng useEffect truyền vào watch('images') ta không truyền [0] là vì nó là 1 mảng chứa nhìu ảnh.
+B6 Ta render ra bằng cash kt nó lớn hơn 0 rồi map nó ra trong images.
+- Làm phần khi click vào ảnh cần xóa thì xóa nó đi
+B1 Trong phần lấy ra nhìu ảnh khi push vào mảng ta chia làm 2 phần: { name: file.name, path: base64 } trong đó name là tên của ảnh đó, base64 là phần ảnh sẽ đưuọc render ra màn hình. Mục đích là để lấy đưuọc tên để mình kt giá trị mình đang click
+B2 Ta sẽ tạo một thẻ làm lớp phủ bao quanh hình ảnh để khi ta hover vào nó sẽ tạo sự khác biệt.
+  B2.1 Ta sẽ tạo một thẻ div bao quanh hình ảnh và một div con làm lớp phủ. Trong div con ta dùng absolute và inset-0.
+  B2.2 Ta ràng buộc nó xuất hiện bằng một useState(null). Khi người dụng hover vào nó ta dùng sự kiện onMouseEnter rồi set nó với tên của ảnh đó. Khi hover ra ta dùng onMouseLeave set nó trở về lại null.
+  B3 Ta dựa vào đó bắt sự ràng buộc nếu như giá trị đó bằng với tên của ảnh đó thì ta sẽ hiện lớp phủ.
+B3 Làm phần khi click vào nút xóa thì xóa ảnh đó đi.
+  B3.1 Ta tạo phương thức để lấy giá trị name bằng cách truyền xuống onClick của nút xóa giá trị name đó.
+  B3.2 Khi đó phương thức đó nhận một giá trị tên của ảnh vừa click.
+  B3.3 Ta kiểm tra xem ảnh đươc lưu trữ trong images trong useState có bằng với tên mình vừa lấy hay không? Nếu có thì cập nhật lại useState của images đó với điều kiện là lọc hết các ảnh trừ thì vừa lấy ra.
+Bây h xử lý lấy dữ liệu truyền lên apis.
+B1 TRong controllers của products ta lấy các trường mà mình đã có trên giao diện. Ngoài trừ hình ảnh là dùng files của multer để truy xuất vào ảnh tìm đến đường dẫn ảnh là path.
+B2 Nếu 1 trong các trường sai thì báo lỗi.
+B3 Ghi đè ảnh để cập nhật lên data.
+B4 Tạo sản phẩm.
+Bên router của post product ta làm 1 middleware của multer .field để tạo 2 key và 2 giá trị để xác định số lượng nạp vào của mỗi key.
+Qua bên client với phương thức handleCreateProduct nhận vào data. 
+B1 Ta tạo formData để dễ dàng gửi dữ liệu lên server
+B2 Ta dùng một hàm để lưu tất cả giá trị trên các ô tạo sản phẩm.
+ const finalPayload = { ...data, ...payload }; 
+B3 Ta kiểm tra giá trị thumb nếu có thì ta dùng 
+  formData.append("thumb", finalPayload.thumb[0]); dể tạo key là thumb.
+Còn với images ta dùng for để loop nó vì nó là mảng 
+ if (finalPayload.images) {
+    for (let image of finalPayload.images) {
+        formData.append("images", image);
+      }
+  } tạo key là images.
+* Lúc này bên server nó nhận 2 key đó để nó lấy giá trị path.
+B4 Sau đó ta gọi api createProduct truyền vào formData vì lúc này formData đã chứa đủ giá trị để đưa lên server.
+* Fix lỗi khi mình css cho description trực tiếp trên client thì nó sẽ có các định kiểu css (div,red). Và khi render ra màn hình nó cũng xuất hiện. Vì thế ta sẽ làm mất nó đi lúc nó chuẩn bị hiển thị nó ra.
+B1 Khi ta nhập description trên client thì nó đưuọc lưu trong array ["dsds"]. Lúc này array có lenght là 1.
+B2 Lucs hier tjhi ra ta kt độ dài length ===1, thêm thuộc tính dùng để lọc các giá trị không cần thiết là: 
+dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product?.description[0])}}
+DOMPurify.sanitize() là ta phải tải nó về
+npm i dompurify. DomPurify để làm sạch nội dung HTML của sản phẩm.
+B3 Làm hiệu úng loading khi chưa tạo thành công bằng cachs dispatch isShowModal và truyefn component loading vào.
+
+Bài 65 Làm quản lý sản phẩm
+Ta làm tương tự như quản lý user cũng có tìm kiếm và hiển thị sản phẩm
+Sau đó tạo phương thức gọi products và dùng useEffect để thực hiện phương thức.
+Ta cũng truyền pagination bằng count của products đó
+
+Bài 66 Hoàn tất quản lý sản phẩm
+B1 Ta gọi params từ useSearchParams.
+B2 Trong useEffect ta tạo một hằng số để lưu giá trị page từ PagiItem. Sau đó truyền vào fetchProduct với denpendencive là params.
+Thế là xong phần pagination.
+- Đến phẩn hiển thị chỉ số đếm cho sản phẩm (Nó phải lấy theo chỉ số với pagiantion)
+B1 Trong phần render ra index
+ <td className="py-1 px-2">
+      {(params.get("page") - 1) * process.env.REACT_APP_LIMIT + index + 1}
+  </td>
+Ví dụ như khi ta click vào trang số 2 thì lúc này page sẽ là (1 * 7) + 0 + 1 sẽ là 8 thì trang 2 sẽ là từ 8 trở đi.
+Còn nếu ta click lại số 1 thì (0 * 7) + 0 + 1 thì nó sẽ bắt đầu từ 1 trở đi.
+
+Tiếp theo ta sẽ làm phần tìm kiếm theo nhiều trường.
+Ta cũng làm tương tự như manageUser.
+B1 Ta cũng tạo useState để lấy giá trị.
+B2 Gọi component inputField truyền vào nameKey,value,setValue từ useState vừa tạo.
+B3 Gọi hook useDebouce truyền vào 2 giá trị là useState chứa giá trị và thời gian gọi apis.
+B4 trong useEffect ta tạo phương thức từ params
+   const queries = Object.fromEntries([...params]);
+B5 Ta kt nếu có  giá trị trong useDebouce thì ta tạo key là q và gán giá trị đó cho nó, với denpendencive là useDebouce.
++ Giá trị nhập vào sẽ gán cho useDebouce trước
+B6 Vào server getProducts tạo một object rỗng. Sau đó kt 
+"queries?.q" (q phải trùng với q trong client).
+B7 Ta phỉa xóa gia trị q trước sau đó ta tạo một mảng chứa các trường mà ta muốn tìm kiếm. Cuối cùng là dùng phương thức $or với mảng đó.
+B8 Dùng ...spread để truyefn vào find của product để tìm kiếm.
+- Tiếp theo làm phần search khi đang ở page 3 mà ta tìm kiếm sản phẩm chỉ đủ ở page 2.
+B1 Ta import {createSearchParams,useNavigate,useLocation} từ react router dom.
+B2 Định kiểu lại cho useNavigate,useLocation,
+B3 Tạo một useEffect mới kiểm tra useDebouce có giá trị chưa thì lúc này ta navigate đến trang hiện tại, và tạo một url tìm kiếm với key là q (.toString() để nó về dạng string) và được truyền lên url. Nếu nó không có useDebouce nghĩa là giá trị tìm kiếm là rỗng thì ta sẽ cho nó tới trang hiện tại.
+B4 Trong useEffect của gọi apis ta tạo Object và lấy từ đối số [...params] sau đó truyền nó vào fetchProduct.
+=> Luồng chạy sẽ là khi ta truyền lên url gia trị tìm kiếm mà ta đang ở page 4, khi đó params thay đổi thì useeffect gọi apis product sẽ được gọi lại và nó sẽ trở về lại page1 để hiển thị sp vừa tìm kiếm (để tránh trường hợp ta đang pag4 mà sp chỉ đủ cho pag2 làm cho sp không hiển thị được.)
+
+Bài 67 Chỉnh sửa sản phẩm.
+Đối với nút edit thì ta sẽ tạo một components riêng.
+B1 Ta tạo một components là UpdateProducts. Sau đó trong manageProducts ta import nó vào. Với đk là phải có dữ liệu sp đó mới hiển thị nó lên bằng cách tạo một useState(null) khi ta nhấn vào edit thì ta set useState có giá trị là products đang map ra đó.
+B2 Ta copy tất cả các thẻ trong form của createProducts qua cho thằng UpdateProducts.
+B3 Ta dùng useForm để lấy thằng reset làm giá trị mặc định cho các ô input. reset({phải trùng với tên id của các ô input})
+    reset({
+      title: editProducts?.title || "",
+      price: editProducts?.price || "",
+      quantity: editProducts?.quantity || "",
+      color: editProducts?.color || "",
+      category: editProducts?.category || "",
+      brand: editProducts?.brand?.toLowerCase() || "",
+    });
+trong đó editProducts là lấy từ thằng createProducts truyền xuống làm props.
+B4 Đối với thằng description thì ta đã có lưu dưới dạng useState nên ta dùng set useState để cập nhật giá trị mặc định
+    setPayload({
+      //Vì trong lúc lưu description là mảng nên nó sẽ không hiển thị ra. Nên ta sẽ kiểm tra nó có phải là object hay không? Nếu đúng thì nối nó lại thành chuỗi string, nếu không là mảng thì in nó ra
+      description:
+        typeof editProducts?.description === "object"
+          ? editProducts?.description?.join(", ")
+          : editProducts?.description,
+    });
+B5 Đối với 2 hình ảnh thì ta cuncg dùng set useState để cập nhật gái trị mặc định cho ảnh.
+    setPreview({
+      thumb: editProducts?.thumb || "",
+      images: editProducts?.images || [],
+    });
+* Lưu ý ở dưới phần render ra hình ảnh images thì trong ô img thì ta chỉ là src = {el} Nó khác với createProducts là el.path vì nó ta push vào mảng với key là path. Còn thằng này thì ta nhận props từ thằng manageProducts nên nó chỉ lưu vào trong mảng nên ta chỉ láy giá trị el mà thôi.
+* B6 Với thằng selectForm category ta cũng truyền options với 2 giá trị là code và value đều truyền vào là title từ categories được lấy từ redux.
+* B7 Với thằng selectForm brand khi ta tìm kiếm find trong categories ta tìm kiếm title trong categories có bằng với watch("category") trong selectForm category hay không. Nếu bằng thì .brand trong categories để map ra brand thuộc title đó. Và truyền dưới dạng code và value cho options. 
+Lưu ý: phải truyền code dưới dạng viết thường và bên reset ta cunngx truyền brand dưới dạng viết thường để chúng có thể so sánh với nhau.
+
+Bài 68 Chỉnh sửa và xóa sản phẩm.
+Đầu tiên trong phần component UpdateProducts ta cũng copy 2 thằng handlePreviewThumb và images để cập nhật 1 ảnh và nhìu ảnh và 2 useeffect để gọi 2 phương thức đó.
+- Lưu ý chúng ta cần sửa useeffect của thằng thumb. Ta kt giá trị ảnh đó có thuộc trong FileList và thumb có độ dài là lớn hown1 nghĩa là ta đã thay đổi ảnh thì mới thực hiện phương thức thay đổi ảnh đại diện.
+- Tiếp đến là sửa useEffect của images khi ta push vào mảng thì ta chỉ push vào base64 vì lúc này ta chỉ hiển thị ở phần chỉnh sửa. Và khi lúc hiển thị ở dưới ta chỉ {el} là nó sẽ hiển thị ra. Cũng là vì UpdateProducts là ta nhận ảnh từ prop nên không cần phải tạo key. useEffects thì ta cũng sửa tương tự như useeffect phía trên.
+- Tiếp đến phần khi ta click vào update product cũng tương tự như chúng ta tạo sp. Khác ở chỗ là ta sẽ không kt điều kiện nếu if(finalPayload.images) như hàm tạo sp mà ta bỏ giá trị nếu đi. Ta sẽ set thêm dk là độ dài của nó có === 0 hay không, nếu bằng thì chưa có sự chỉnh sửa của ảnh thì nó sẽ lấy ảnh theo useState đã tạo trước đó,còn nếu nó khác 0 là đã có ảnh thay thế thì ta sẽ lấy ảnh thay thế đó. Còn với việc tại sao thumb[0] là vì khi ta log ra finalPayload thì trong thumb nó lưu nó có chứa độ dài length nên nó là mảng và là vì thumb mình lưu 1 giá trị nên sẽ lấy [0] là giá trị đó.
+- Còn đối với images nó chứa nhìu giá trị nên ta sẽ loop nó trước khi append vào.
+- Sau đó gọi apis truyền vào _id và formData làm giá trị.
+- Khi thành công thì trở về trang quản lý và cập nhật lại giá trị.
+
+Bài 69 Thêm biến thể sản phẩm
+ - Ta cũng tạo một components tên là VarientsProducts ta sẽ làm giao diện nó tương tự như UpdateProducts. 
+ - Ta cungx set mặc định cho các trường để nó hiển thị sp mình vừa click nó hiển thị lên bằng reset của useForm() với id của các ô input phải trùng với filed trong reset.
+  - Với phần render ra hình ảnh thì ta copy từ UpdateProducts.
+  - Vào trong model của product ta thêm một truongef là varient nó là 1 mảng chứa object với các filed cần thay đổi.
+  - Zô controller của products tạo thêm phương thức để push những thay đổi vào varients.
+    + Lấy ra id sp, lấy path của thumb và images từ files.
+    + Tìm kiếm trong Product, sau đó push các giá trị vào key varients
+  findByIdAndUpdate(
+    pid,
+    {
+      $push: {
+        varients: {
+          title,
+          price,
+          color,
+          thumb,
+          images,
+          sku: makeSku().toUpperCase(),
+        },
+      },
+    },
+    { new: true }
+  );
+  - Sau đó vào router để định nghĩa đường dẫn cho nó. 
+   + Lưu ý cách đặt thứ tự router
+  - Sau đó vào client của varient phần handleVarient ta kt color trong lúc mình nhập vào có trùng với color trong db hay không.
+    + Nếu trùng thì thông báo lỗi chưa sửa color
+    + Nếu khộng trùng thì tạo formData để chứa dữ liệu người dùng nhập vào. Cũng tạo key vào value cho nó tương tự như createProducts.
+
+  Bài 70 Thêm biến thể sản phẩm (2) 
+  Là ta làm phần trong productDetail là ta sẽ hiển thị varient của products đó trong chi tiết của sản phẩm đó. Khi người dùng click vào varient đó thì sẽ thay thế cái sp đang hiển thị.
+  B1 Ban đầu ta sẽ xử lý phần hiển thị phần varients ra giao diện.
+  B2 Xử lý khi clikc vào varient nào thì varient đó có border bằng việc lấy mã sku làm đk.
+    B2.0 Tạo một useState để lưu trữ id của varients đó. Khi onClick thì lưu id vào setVarient
+    B2.1 Còn nếu khi mới hiển thị là không có varient nào thì cũng hiển thị varient.
+    B2.3 Ta dùng clsx để lưu trữ giá trị css mặc định, và dùng dk === để set sự thay đổi
+  B3 Đối với lúc hiển thị title khi có sự thay đổi varient nó sẽ cập nhật lên thì ta sẽ lấy dựa trên tìm kiếm find trong product.varients tìm kiếm id của varient khi setUseState có trùng với id của product.varients đó không, nếu trùng thì lấy title trong đó ra. nếu không có thì lấy product.title của sp đó chứ không lấy title từ useParam.
+  * Ta sẽ tạo một useState để lưu trữ object chứa các giá trị cần thay đổi (title,color,...) khi ta click vào varients.
+  B1 Khi ta click vào varient của products đó thì no sẽ lưu vào id của varients đó.
+  B2 Ta dùng useEffect để cập nhật lại useState khi có sự thay đổi của varients.
+    B2.1 
+      setCurrentProducts({
+        title: product?.varients?.find((el) => el.sku === varient)?.title,
+        color: product?.varients?.find((el) => el.sku === varient)?.color,
+      });
+      Ta tìm kiếm dựa theo dk trong varients có id bằng với id khi ta click vào sự thay đổi của products đó không. Nếu bằng thì ta sẽ lấy title trong object varients đó.
+      Làm tương tự cho các field còn lại.
+  B3 Ta xuống dưới các trường cẩn thay đổi ta sét dk nó thay đổi là || nếu có varient thì lấy từ setCurrentProducts còn nếu không có varient thì ta lấy từ products của sp đó.
+  B4 Đối với thằng thumb ta cũng set dk || nếu có varient thì lấy ảnh thumb của varient không thì lấy ảnh từ products hoặc ảnh khi ta click vào slider.
+  B5 Phần hiển thị slider có 2 trường hợp.
+    B5.1 Ta kiểm tra length của thằng currentProduct được set từ varient nếu length === 0 nghĩa là lúc này người dùng không click vào varient, lúc này ta kết hợp nó để lấy product của chính nào hienr thị ra.
+    B5.2 Còn nếu người dùng click vào varient thì lúc này nó lấy ảnh image nó sẽ lớn hơn 0 và ta sẽ map images ra.
+  B6 Khi ta click vào một sản phẩm khác để thay thế thì ta phải truyền varient và setCurrentProducts xuống cho thằng CustomSlide là nơi chứa các sp liên qua đến sp đang được chọn.
+    B6.1 Ta tạo một phương thức để set lại varient trở về ban đầu là null để khi ta chọn nó, nó sẽ css lại phụ thuộc vào varient.
+    B6.2 Ta cũng set lại các thuộc tính hienr thị 
+      setCurrentProducts({
+      title: "",
+      color: "",
+      price: "",
+      thumb: "",
+      images: [],
+    }); trở về lúc ban đầu khồn còn dính lại của varient của sp trước đó.
+
+  Bài *(Hay) 71 Chỉnh sửa thông tin cá nhân 
+  B1 Đầu tiên ta tạo một useState boolean để thực hiện hiển thị menu khi click.
+  B2 Ta lấy nó làm dk để hiển thị menu. Trong menu ta tạo 3 thẻ link là của personal (trang của thành viên), trang của admin và logout tài khoản.
+    B2.1 Trang của member thì ta Link theo file App.jsx thẻ bao quanh là MEMBER và thẻ con là PERSIONAL.
+    B2.1 Đối với admiin để hiern thị thì phải kt current là tên của user đưuọc lấy từ store có role là admin hay không. Và cũng Link tới admin rồi mới tới DASHBOARD
+  B3 Ta làm chức nawg khi người dùng click ra bên ngoài menu thì nó sẽ ẩn menu đi.
+    B3.1  Cách 1 là tạo id cho thẻ chứa menu rồi dùng document.getElementById("id").
+    B3.2 Ta dùng hook useRef bằng cash ta tạo một hằng số.
+      const menuRef = useRef(null); rồi lấy menuRef truyền xuống thằng bao quanh menu đó. ref={menuRef} là ta đã lấy được tất cả thuộc tính của thẻ đó.
+  B4 Ta tạo một useEffect dùng để xử lý khi người dùng click ra bên ngoài hay không. Trong useEffect ta tạo một phương thức kt có đang lấy đúng thẻ div đó không đồng thời có đnag click ra bên ngoài hay không
+    const hanldeClosedMenu = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsShowOption(false);
+      }
+    }; //!menuRef.current.contains(event.target) là không phải là thẻ đó tức là người dùng đã click ra ngoài thẻ chứa ref đó. Khi click ra bên ngoài thì đóng menu
+  ** Lưu ý khi đóng addEventListener thì ta phải gỡ nó đi viejc này rất quan trọng.
+     return () => {
+      document.removeEventListener("click", hanldeClosedMenu);
+    // Loại bỏ sự kiện khi component bị unmount
+    // Việc này giúp tránh lỗi và vấn đề bảo mật có thể xảy ra khi bạn không loại bỏ sự kiện.
+    };
++++ Còn vì sao trong useEffect nó không có dependencive mà nó vẫn thực hiện phương thức bên trong là vì khi ta đăng kí sự kiện click có thể lan truyền ra ngoài component của bạn và gọi lại hàm. Khi bạn click ra bên ngoài, sự kiện click trong useEffect nó được kích hoạt và nó sẽ gọi đến hàm đóng menu, việc này nó sẽ không render lại component vì khoobg có denpendencive mà nó chỉ kt sự kiện click.
+  B5 Đối với logout tài khoản ta gọi logout từ store user, sau đó dùng dispatch để kích hoạt logout thì nó sẽ reset lại các thuộc tính về trạng thái ban đầu từ localStorage.
+
+  B6 Làm profile cho member.
+Ta cũng làm tương tự như trang của admin.
+B1 Ta cũng có một trang layout để chia 2 phần sideBar và nội dung khi click vào menu sideBar.
+B2 Trong trang sideBarMember ta copy từ sideBarAdmin.
+B3 Ta vào trong file contants.jsx ta tạo thêm một mảng dành riêng cho member cũng có text,path,icon,id,type
+  {
+    id: 1,
+    type: "SINGLE",
+    text: "Personal",
+    path: `/${path.MEMBER}/${path.PERSONAL}`,
+    icon: <AiFillDashboard />,
+  },
+  B4. Trong file path.jsx ta tạo thêm các đường dẫn dành cho member để hiện thị lên url .
+  B5 Trong file App.jsx ta có một route bao quanh là thằng memberLayout bọc các component của menu.
+  B6 Ta tạo các trang của những thằng menu của user.
+  B7 Vào trang SidebarMember lấy từ file contants map ra, dùng Navlink làm điều hướng trang to{el.path} lấy isActive làm className để khi mở ra thì nó active thawfg đầu tiên.
+
+- Ta sẽ làm bên hiển thị thông tin user.
+B1 Ta lấy components InputForm để hiển thông tin của các field cần lấy. Ta sẽ lấy 4 field (firstName,lastName,email,mobile)
+      <InputForm
+          label="First Name"
+          id="firstName"
+          register={register}
+          errors={errors}
+          validate={{ required: "Need fill this field!" }}
+          fullWidth
+        />
+B2 Ta bọc chúng vào thẻ form.
+B3 Tạo một handleUpdate để log thông tin ra, rồi truyền nó vào onSubmit của form.
+B4 ta dùng useForm để lấy các phương thức từ useForm như handleSubmit truyền xuống form, reset để lấy thông tin cập nhật xuống input
+B5 Ta dùng useEffect với dependencive là current (là thông tin user khi ta đăng nhập thành công.) dùng reset của useEform để lấy thoong tin từ current.
+(Lưu ý: Các filed trong reset phải trùng với id dưới input)
+B6 Làm chức năng khi ta sửa đổi form thì mới hiện nút update. Trong useForm có một thuộc tính là isDirty. Khi người dùng sửa đổi thì nó sẽ là true còn không sửa là false. Ta lấy dk đó làm dk hiển thị ra button update.
+B7 Chúng ta validate 2 field là email và phone trước khi update với validate và pattern.
+- Tiếp theo ta sẽ làm phần update thông tin khi người dùng sửa đổi.
+B1 Trong Server của user ta cần lấy nhưng thông tin mà người dùng chỉ được sửa ("Coi trong Server")
+B2 Trong router của user update thì ta cấu hình multer là .single là vì khi update image cho user ta chỉ update 1 ảnh nên là single với key là "avatar"
+B3 Qua bên client khi ta update ta phải lấy những thông tin người dùng gửi lên trước khi đưa xuống server.
+  (*Coi kĩ trong Client có nhìu cái hay trogn formData)
+  (*Khi ta có ảnh rồi, lúc ta lấy giá trị value của nó thì ta lấy theo data.avatar[0] vì khi nó lưu ảnh thì nó lưu dưới dạng [] nên khi ta truy xuất ta phải trỏ zô để lấy đường link)
+B4 Ta muốn hiển thị ảnh ra trước để cho người dùng thấy rồi mới update ảnh đó.
+  B4.1 Tạo một useState lưu giá trị object là một thumb.
+  B4.1 Tạo một phương thức để set ảnh đó vào useState sur dụng base64 để xử lý ảnh
+B5 Dùng useEffect để kt ảnh và gọi phương thức xử lý ảnh.
+B6 Ta render ra bằng cashc kt có preview.thumb thì mới hiển thị ảnh trong useState, render thứ 2 là không có preview.thumb thì render ảnh mặc định.
+
+Bài 73 Higher-Order Component - Hiểu về HOC
+sau khi tìm hỉu thì nó là một cách dùng để sử dụng chung cho các component khác. Nó gom các phương thức mà các compoent hay sử dụng lại với nhau thì các compoent kia chỉ cần gọi nó ra chứ không cần phải import từ đầu.
+
+Ta tạo một folder hocs và tạo một file có tên là withBaseComponent. Lưu ý khi dùng hocs thì tiền tố sẽ dùng là with còn hooks là use.
+ - Trong file đó ta import các phương thức hay dùng nó nhận vào 2 đối số khcsa nhau, đối số 1 sẽ là một Component để ta return nó, vì thằng này nó bọc vào một compoent làm đối số.
+ - Đối số 2 là một props để nó trả lại các props của component đó.
+ - Khi return ta truyền props cho Compoent đó vào ...props.
+ - Ta vào component cần dùng import nó vào sau đó dùng nó bọc component hiện tại. Truyền props cho compoent đó rồi từ props lấy ra các phương thức cần thiết như (props.navigate("/"))
+
+Bài 74 Display Grid
+Tìm hiểu về grid, xét cols và rows, 
+
+Bài 75 Handle quick view product
+Khi ta hover vào product thì nó sẽ xuất hiện 3 icons ta muốn icons mắt là hiện ra modal chứa chi tiết sản phẩm đó, icons tim là hiện wishlist, còn icon menu là hiện đến trang chi tiết sản phẩm.
+B1 Ta tạo một phương thức truyền vào e và flag. flag là tượng trưng cho tên của từng icon.
+B2 Ta xuống icons ta gọi phương thức đó và truyền vào e và tên riêng của icon đó.
+      handleClickOptions(e, "WISHLIST")
+B3 Ta vào lại phương thức đó ta bắt sự kiện chống nổi bọt nghĩa là khi ta click vào icon đó thì trong icon đó có các j thì nó mới thực hiện chứ nó không chạy đến trang detail.
+B4 Đối với QUICKLIST thì ta dispatch để nó kích hoạt modal để nó hiển thị modal lên.
+  B4.1 Ta sẽ gọi dispatch bằng destructuring vì ta đã bọc nó vào trong hocs.
+  B4.2 Ta gọi showModal từ redux của categories ta truyền vào dưới dạng object là isShowModal là true và modalChildren là component của trang minh cần lấy dữ liệu và truyền vào compoent đó một props để xét dk ở trang đó để lấy các thông tin cần thiết.
+* Lưu ý khi ta click vào mắt thì modal đó phải nằm ngay tại đó chứ không xuất hiện ở đâu hết. Ta xem phần App.jsx và public.jsx.
+* Còn mà vì sao khi ta click ra bên ngoài mà nó mất modal đó đi là vì ta dispatch isShowModal về lại false và modalChildren về lại null.
+B5 Đối với modal mà nó không hiển thị product đó thì là do nó không nhận được product truyền xuống cho productDetail, Khi ở productDetail nó lấy các trường cần lấy từ params để nó gọi api.
+  B5.1 Ở trang productSellers ta truyền props xuống modalChildren dispatch là data chứa 2 giá trị là pid và category từ productData nhận từ CustomSlide
+  B5.2 Ở bên productDetail nhận giá trị data bằng destructuring. Sau đó tạo 2 useState để cập nhật pid và category
+  B5.3 Ta dùng useParam để lấy giá trị trên url để cập nhật cho productDetail.
+  B5.4 Ta dùng useEffect có 2 giá trị denpendencive là data,params. data là ta nhận từ dispatch để cập nhật modal detail.
+
+  Bài 76 Add product to cart
+  * Sửa lại trang Product.jsx phần gọi apiGetProduct ta truyền thêm category để nó gọi sp theo đúng fetchProductCategory.
+  B1 Ta vào api để sửa lại phương thức updateUserCart là ta mặc định quantity = 1, ta cũng kt user đó có id của sp đó chưa, nếu có rồi thì set lại quantity và color. Còn chưa thì push nó vào giỏ hàng của user.
+  B2 Ta tạo một apis trong apis/user
+  B3 Khi ta click vào icon thêm vào giỏ hàng thì ta phải bắt đk đã đăng nhập chưa trước khi gọi api. Nuế chưa đăng nhập thì navigate đến trang đăng nhập.
+  B4 Khi mà người dùng đã đăng nhập thì ta gọi api và truyền xuống giá trị pid và color theo mình đã định nghĩa ở server. pid thì ta truyền xuống productData._id, color thì productData.color.
+  B5 Khi mà ta add cart thành công thì dùng toast thông báo kết quả và gọi lại data của user để nó cập nhật vào giỏ hàng của nó.
+  B6 Vào trang header lấy current.cart.length để cập nhật só lượng sp đã thêm vào giỏ hàng.
+
+  Bài 77 Add product to cart(2)
+  Ta sẽ làm phần khi click vào items thì xuất hiện modal chứa những sản phẩm đã thêm.
+  B1 Ta tạo môt reducers chứa một phương thức để khi ta click thì nó sẽ chuyển thành true false để đóng modal. Ta sẽ set nếu đang false thì khi ta click lần đầu sẽ true lần sau sẽ là fasle.
+  B2 Ta vào file App.jsx ta sẽ set dk khi isShowCart là fasle hay true thì nó sẽ ẩn hay hiện. Ta import components YourCart vào trong dk đó.
+  B3 Trong dk đó ta sẽ onClick là khi người dùng click vào bg-overlay thì ta sẽ dispatch phương thức trong reducers để set thằng isShowCart để nó đóng nó lại.
+  B4 Tương tự ta cũng làm cho dấu X của YourCart
+  - Bây h ta sẽ chia row cho thằng YourCart
+  B1 Ta chia class cha thành 10 hàng "grid grid-rows-10". Tiêu đề chiếm 1 hàng, nội dung chiếm 6 hàng và mua hàng chiêm 3 hàng.
+  Nhưng ta phải config thành 10 hàng trong file tailwind.config.js 
+  {
+      gridTemplateRows: {
+        // Simple 10 row grid
+        10: "repeat(10, minmax(0, 1fr))",
+      },
+  }
+  B2 Ta vào file user.js trong controllers phần getCurrent ta populate giống như populate phần product.
+   .populate({
+      path: "cart",
+      populate: {
+        path: "product",
+        select: "thumb title price",
+      },
+    });
+  B3 Sau đó ta render ra trong component YourCart và css cho nó.
+  B4 Đến phần tổng tiền sản phẩm thì ta dùng phương thức reduce trong cart của user đó.
+    current?.cart?.reduce(
+                (accumulator, currentValue) =>
+                  accumulator + currentValue?.product?.price,0)
+  B5 Làm phần xóa sp, ta đã tạo phương thức xóa ở trong Server ta cũng lấy giỏ hàng của người dùng đó và kt id sp trong giỏ hàng đó có bằng id của của sp đã lấy hay không. Nếu đúng thì dùng phương thức pull để xóa id của sp đó đi.
+    B5.1 Ta vào file user.jsx định nghĩa phương thức removeCart với tham số là pid 
+    B5.2 Vào component YourCart.jsx  ta lấy id sản phẩm trong giỏ hàng của khahcs hàng đó từ onclick, dùng phương thức nhận vào pid sau đó gọi api xóa sp, nếu thành công thì dispatch lại gteCurrent để cập nhật lại giỏ hàng.
+  Bài 78 tiếp theo
+  Bây h ta sẽ tọa một trang để hiển thị sản phẩm mà khách hàng muốn mua,vì nó là 1 trang riêng biệt nên ta sẽ tạo nó ở public.
+  Ta vào file path tạo một tên miền cho nó và vào file App.jsx gọi nó là của trang DetailCart.
+  Trong component này ta cũng lấy current từ store để lấy giỏ hàng.
+  Trong phần này ta cũng dùng  <BreadCrumbs category={location?.pathname} /> để làm thanh điều hướng. Trong đó pathname là đường dẫn trên url.
+  Sau đó ta cũng dùng current để lấy giá trị trong cart để render ra.
+  * Hay 
+  Là khi ta đang ở trang productDetail mà ta muốn mua hàng nhưng mà ta phải đăng nhập, khi đăng nhập xong nó chuyển sang đúng trang productDetail đó.
+  B1 Trong phần nếu như chưa đnăg nhập thì ta sẽ tạo một naviagte truyền vào 2 tham số mặc định của navigate là pathname và search. Thì khi ta nhấn go to login thì nó sẽ đến trang login dựa vào thằng path mà nó kèm theo đường dẫn là location.pathname là nó lấy cái trang mà bấm nút go go login nó nó hiển thị lên url
+   pathname: `/${path.LOGIN}`,
+            search: createSearchParams({
+              redirect: location.pathname,
+            }).toString(),
+  B2 Sau đó vào trang login dùng useSearchParams để lấy url đó
+   const [params] = useSearchParams();
+  console.log(params.get("redirect"));  khi ta log key là "redirect" key này là ở trang productDetail ta đã tạo trong search. thì nó sẽ lấy được trang mà ta đã nhấn go to login.
+  B3 Cũng ở trang login vào phần khi đăng nhập thành công ta sét dk là có key đó thì naviagte tới trang đó còn không về lại trang Home.
+  params.get("redirect")
+            ? navigate(params.get("redirect"))
+            : navigate(`/${path.HOME}`);
+  Bài 80  Fix api update cart 
+  Ta sẽ fix lỗi khi ta add product vào giỏ hàng thì ta add tất cả các filed mà ta hiểm thị lên gồm ( !pid || !color || !price || !title || !thumbnail).
+   - Ta cũng tìm kiếm có id sp đó trong giỏ hàng của người đó không.
+   - Nếu có sp đó và đồng thời màu sắc của sp đó giống màu mà mình muốn chỉnh sửa thì ta chỉnh sửa dc các field còn lại.
+   - Nếu không có thì ta add tất cả các field vào giỏ hàng của user đó.
+   - Trong apis của user ta đã nhận vào data thì bên productDetails ta truyền vào object tất cả các field đó 
+   {
+        pid: pid,
+        color: currentProducts?.color || product?.color,
+        price: currentProducts?.price || product?.price,
+        thumbnail: currentProducts?.thumb || product?.thumb,
+        title: currentProducts?.title || product?.title,
+      }
+       + Ở đây currentProducts?.color được lấy từ varient nếu sp đó có varient khác. Còn không thì lấy data của sp đó.
+  - Tiếp theo ta vào trang YourCart ta map trực tiếp cart của user chứ ta không lấy trong product
+   current?.cart?.map((el) => (
+    el.title
+   ))
+  - Bên DetailCart làm tương tự.
+  - Tiếp đó ta fix phần xóa khi ta xóa 1 sp mà có 2 varient thì ta xóa 1 cái chứ không xóa cả 2.
+    + Trogn server ta nhận thêm params là color để
+    + trong api của user ta truyền thêm color và trong productDetails ta truyền thêm color của sp trong user đó là nó sẽ xóa id và color của 
+  
+  - Bây h ta làm đến phần số lượng của sp.
+    B1 Ta tạo thêm một component để lưu chi tiết sp trong giỏ hàng của bạn ("OrderItem").
+    B2 Ta copy từ chỗ current.cart.map truyền cho OrderItem với props là giá trị el từ current.cart.map
+    B3 Cũng import các giá trị cần thiết.
+Bài 81 tt
+    B4 Ta tạo một mảng currentCart trong useSlice user để chứa giá trị cart trong user khi gọi apis getCurrent thành công ở asyncActions.
+    B5 để lấy quantity khi người dùng chọn quantity rồi mới add vào giỏ hàng thì lúc add ta truyền vào quantity, khi đó thì nó sẽ lưu quantity vào data. 
+    B6 Ta truyền quantity trong cart xuống thằng OrderItem thông qua props. Rồi thằng OrderItem nhận nó vào truyền cho useState để lấy giá trị khởi đầu, đồng thời set giá trị cho số lượng luôn.
+    B7 Bây h ta sẽ làm phần khi ta tăng sô lượng sp thì quantity của sp đó sẽ thay đổi theo đồng thời tổng tiền của sp đó và tổng tiền của tất cả sp cũng thay đổi theo.
+      B7.1 Ta tạo một phương thức bên DetailCart để truyền xuống OrderItem thông qua props và phương thức này nhận 3 tham số là pid,color,quantity của sp đó (quantity là useState nắm giữ số lượng sp đó nó không nằm trong database), muốn lấy những thằng nay thì thằng quantity phải thay đổi nó mới lấy dc.
+       useEffect(() => {
+          handleChangeQuantities &&
+          handleChangeQuantities(el.product?._id, quantity, el.color);
+      }, [quantity]);
+      B7.2 Bên DetailCart cũng nhận đưuọc 3 tham số đó. Và thực hiện hành động dispatch phương thức updateCart và truyền vào 3 tham số đó vào.
+        dispatch(updateCart({ pid, quantity, color }));
+      B7.3 Ta vào store/users/userSlice.jsx trong reducers ta tạo thêm một phước thức là updateCart nhận vào 2 tham số là state và action
+      Ta lấy 3 giá trị đưuọc truyền vào từ clinet bằng action.payload(action.payload là nơi chứa dữ liệu từ client gửi về.)
+      Ta tìm kiếm sp mà ta đã thay đổi số lượng bằng cách lấy giá trị currentCart và tìm kiếm dựa vào phương thức Index với dk là color và pid của sp đó.
+      const productIndex = state.currentCart.findIndex(
+        (item) => item.color === color && item.product._id === pid
+      );
+      Ta kiểm tra phương thức đó có khác -1 hay không, nếu nó khcas -1 nghĩa là nó đã tìm thấy sp đó và set lại quantity của giá trị index đó băng với quantity mà client nhập vào.
+      if (productIndex !== -1) {
+        state.currentCart[productIndex].quantity = quantity;
+      }
+      * Ta kiểm tra xem tổng tiền đã nhân với số lượng chưa.
+
+  Bài 82 fix các lỗi hiển thị.
+    - Fix lỗi BreadCrumbs cho thằng DetailCart.
+       <BreadCrumbs
+          category={location?.pathname?.replace("/", "").split("-").join(" ")}
+        />
+      Ban đầu nó sẽ là "Home => /Detail-Cart".
+       + Bạn sử dụng .replace("/", " ") để thay thế tất cả dấu "/" bằng dấu cách trắng " ". Ví dụ: Nếu pathname là "/example-category", sau bước này, nó sẽ trở thành " example-category".
+       + Sau đó, bạn sử dụng .split("-") để chia chuỗi thành một mảng bằng cách tách nó bằng dấu "-". Ví dụ: Nếu chuỗi là "example-category", sau bước này, bạn sẽ có một mảng ["example", "category"].
+       + Cuối cùng, bạn sử dụng .join(" ") để nối các phần tử của mảng bằng dấu cách trắng
+       => Kết quả sẽ là: Home => Detail Cart.
+    - Fix lỗi khi đã add vào giỏ hàng thì không dc add vào được nữa. Bên Server lúc add vào cart.
+      + Ta dùng find để kt id đồng thời kt luôn color của sp đó 
+          const alreadyCart = await userCart?.cart?.find((cart) => cart.product.toString() === pid && cart.color === color );
+  
+  - Fix lỗi ở trang productDetail ta click vào sp khác nó không chạy lên trang đầu mặc dù ta dùng   
+    window.scrollTo(0, 0); nhưng vẫn không được.
+    + Ta dùng  scrollRef.current.scrollIntoView({ block: "center" });
+     + Trong đó scrollRef là ta dùng useRef của react và đặt nó ở trong thẻ div và trong useEffect 
+      scrollRef.current.scrollIntoView({ block: "center" }); là nó sẽ lăn lên thẻ div chứa ref là scrollRef.
+  
+  - Fix khi ta chuyển đến trang giỏ hàng thì nó sẽ chạy vào trang memeber và hiển thị giỏ hàng của user đó chứ không chạy như trước đó.
+   B1 Vào App.jsx chuyển componet DetailCart vào path là myCart.
+   B2 Vào trang YourCart khi ta click vào Shopping Cart thì ta chuyển đến trang member là myCart. 
+   navigate(`/${path.MEMBER}/${path.CART}`);.
+
+   - Bây h ta làm khi người dùng click vào checkout thì nó sẽ chuyển đến một trang web khác mà cũng cùng đường dẫn của mình.
+    B1 Tạo một file CheckOut trên folder Member, tạo đường dẫn path cho nó.
+    B2 Vào file App.jsx tạo Route cho nó nằm ngoài các Route Member,Admin,Public.
+    B3 Lúc Link to nó thì kèm theo thẻ target="_blank" để nó tạo một trang web mới.
+  
+  Bài 83 Chức năng thanh toán
+  B1 npm i @paypal/react-paypal-js
+  B2 Trong component CheckOut ta gọi CurrentCart nhưng nó sẽ không có dữ liệu vì ta chưa lưu currentCart dưới localStorage nên qua trang tab mới nó sẽ không nhận được.
+    + B2.1 Ta vào store_redux vào phương thức userConfig trong whitelist ta truyền vào mảng giá trị "currentCart" là nó sẽ lưu dưới localStorage.
+  B3 Ta vào trang IconScout lấy ảnh free dưới dạng svg.
+  B4 Ta chia layout thành 10 hàng, làm bảng table để render ra giá trị giỏ hàng.
+
+  - Làm phần Paypal *
+  B1 ta tạo một compoent bên trong folder common.
+  B2 Vào trang PayPal / PayPalButtons - Default ⋅ Storybook => Docs coppy đoạn mã để tạo 2 nút thanh toán.
+  B3 Làm theo code video.
+  B4 Khi làm xong ta truyền component Paypal vào CheckOut truyền vào props là mount với tổng tiền làm tròn dưới dạng USD
+
+  - Trong db models của Order chúng ta lưu tất cả giá trị của sảm phẩm đó vào mảng products.
+  - Trong db controllers Order phương thức createOrder chúng ta sửa lại là ta lấy products và total của sp đó, sau đó ta lưu nó vào models. 
+
+  Bài 84
+  Bài 85 Tạo đơn hàng khi thanh toán thành công.
+  B1 Trong modal của Order ta đã tạo key và value cho từng đơn hàng mà ta cần lưu.
+  B2 Trong thằng component CheckOut khi ta đã gọi Paypal và ta truyền props là payload chứa các thông tin mà Order cần để tạo đơn hàng trong modal phải trùng key với nó gồm: products (products: current?.cart) là mảng của giỏ hàng, total là tổng tiền của giỏ hàng và address là để ta lấy address để cập nhật cho thằng User.
+  B3 Ta nhận payload thông qua destructuring của Paypal 
+  và truyền cho ButtonWrapper.
+  B4 ở phần return PayPalButtons là khi ta click vào PayPal ở giao diện checkout thì khi thành công thì nó sẽ trả về trạng thái đơn hàng là completed thì ta sẽ set dk là completed để thực hiện phương thức tạo đơn hàng.
+  B5 Phương thức đó gọi hàm apiCreateOrder đã tạo ở apis/product. Và truyền vào payload là dữ liệu mà ta đã lấy từ checkout để tạo đơn hàng và cập nhật lại địa chỉ cho user nếu có sự thay đổi.
+  B6 Khi thanh toán thành công và đã tạo đơn hàng thì ta sẽ tạo một hiệu ứng dùng (npm confetti) nó là một component.
+  B7 ở component CheckOut ta dùng mọt useState true false. Nếu là true thì ta sẽ gọi component chứa confetti, false thì không hiện.
+  B8 Ta truền seUseState đó vào PayPal.
+  B9 Thì khi click vào PayPal thì component Paypal sẽ nhận và truyền vào phương thức tạo createOrder. Nếu tạo thành công thì setUseState true là nó sẽ hiện hiệu ứng đó .
+  B10 Hay hơn nữa là ta khi thanh toán thành công thì sẽ hiện popup thông báo thành công và trở về trang Home.
+    B10.1 Khi ta tạo thành công và xuất hiện hịu ứng thì setTimeout khoảng 1,5s thì nó sẽ xuát hiện Swal và khi người dùng click vào ok thì navigate tới trang chủ.
+  
+Bài 86 Fix bug
+* Khi tôi dò lại code thì tôi có chút thắc mắc tại sao tôi click vào sidebar thì trên url xuất hiện 
+http://localhost:3000/smartphone?page=1. Tại sao page =1 và tại sao lại xuất hiện được ?page=1.
+Lý do là vì trong trang Product.jsx ta có gọi component FilterSearch nên khi render ra trang Product.jsx thì nó phải chạy qua trang FilterSearch.jsx. Ở trang này ta dùng useParams() để lấy categories từ sideBar bắn lên url.
+Trong trang này nó có 2 useEffect để tính lấy giá trị màu và giá tiền.
+Thì trong useEffect nó sẽ chạy lần đầu trước khi có sự thay đổi của denpendencive. Vì nó chạy từ trên xuống nên useEffect thứ 2 ta cũng lấy params để duyệt qua. Sau đó ta lấy queries.page để tạo page và gán giá trị là 1. 
+Và ta dùng navigate để chuyển hướng url sang pathname là category, và dùng createSearchParams để lấy page gán bằng page=1 khi đó thì nó sẽ tạo cho ta ?page=1 cùng với pathname ta dc category?page=1.
+
+* Fix lỗi khi ta click vào navigate product thì nó không gọi dc product và hiển thị trên url là localhost:3000//:category. Là bởi vì khi ta click nó thì trong path ta định nghĩa nó là :category mà khi đẩy lên thì nó lại không có giá trị nên nó sẽ hiện là :category.
+B1 Ta vào file path định nghĩa lại đường dẫn url là
+PRODUCTS_CATE: ":category" (Ta vào file App.jsx để định dạng lại path và to đến trang Product.jsx) khi đó khi mình click vào sideBar là nó sẽ đều lấy được
+PRODUCTS: "products" ("Cái này ta không chỉnh sửa j trong file path") mà dùng đường dẫn PRODUCTS ở navigation trong navi contants.
+B2 Khi người dùng click vào navigation product thi nó sẽ đẩy path.PRODUCTS lên là ://products thì thằng component products sẽ nhận nó bằng useParams.
+B3 Trong lúc fetchProduct ta xử dk nếu có category lấy từ useParam có !== "products" thì ta tạo key là category với giá trị là category đó
+    if (category && category !== "products") queries.category = category;
+  Còn nếu nó bằng ==="products" thì gọi hết sp như bình thường.
+* Còn vì sao khi click vào navigation khác mà không chạy vô compoent Products là vì các navigation khác ta đã đinh nghĩa đến từng trang khác nhau nên không vào dc trang product.
+
+- Làm phần trước lúc chuyển sang trang checkout để thnaht toán paypal thì người dùng phải cập nhật địa chỉ.
+B1 Ở trang DetailCart ta kiểm tra address trong current và thực hiện hiện popup thông báo. Nếu người dùng nhấn ok thì sẽ naviagte với 2 key là pathname và search. Với pathname là trang mà nó chuyển hướng tới để cập nhật address. search dùng createSearchParams của react router dom với key là redirect là trang hiện tại trước khi nhấn nút ok
+  search: createSearchParams({ redirect: location.pathname,
+    }).toString() Mục đích là nó sẽ chuyển đến trang Personal và giữ lại trên url trang DetailCart trước đó.
+B2 Ở trang Personal ta dùng param.get("redirect") để lấy đường dẫn của trang myCart. Mục đích là khi cập nhật address thành công thì ta sẽ kt có đường dẫn đó không nếu có thì chuyển đến trang myCart.
+  if (params.get("redirect")) {
+        navigate(params.get("redirect"));
+    }
+=> Đường đi: myCart click checkout nuế chưa có address thì chuyển hướng tới trang personal cập nhật address và nhận địa chi url của trang myCart để khi cập nhật thành công thì chuyển hướng đến trnag myCart

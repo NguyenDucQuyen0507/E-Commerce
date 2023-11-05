@@ -1,0 +1,31 @@
+const path = {
+  PUBLIC: "/",
+  HOME: "",
+  ALL: "*",
+  LOGIN: "login",
+  PRODUCTS_CATE: ":category",
+  BLOGS: "blogs",
+  CATE: "cate",
+  OUR_SERVICES: "services",
+  FAQ: "faqs",
+  PRODUCTS_DETAILS__CATE__PID__TITLE: ":category/:pid/:title",
+  FINAL: "finalregister/:status",
+  RESET_PASSWORD: "reset-password/:token",
+  DETAIL_CART: "detail-cart",
+  PRODUCTS: "products",
+  //Admin
+  ADMIN: "admin",
+  CREATE_PRODUCTS: "create-products",
+  DASHBOARD: "dashboard",
+  MANAGE_ORDER: "manage-order",
+  MANAGE_PRODUCTS: "manage-products",
+  MANAGE_USER: "manage-user",
+  //Member
+  MEMBER: "member",
+  PERSONAL: "personal",
+  CART: "my-cart",
+  HISTORY: "history",
+  WISHLIST: "wishlist",
+  CHECKOUT: "checkout",
+};
+export default path;

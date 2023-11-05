@@ -1,0 +1,85 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:ital,wght@0,100;0,300;0,400;0,500;1,100;1,200;1,300&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.customer-slider button.slick-next {
+  right: 80px;
+  z-index: 10;
+}
+.customer-slider button.slick-prev {
+  left: 20px;
+  z-index: 10;
+}
+.customer-slider button.slick-next::before {
+  color: gray;
+  content: "\276F";
+  background-color: #ccc;
+  width: 80px;
+  height: 80px;
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.customer-slider button.slick-prev::before {
+  color: gray;
+  content: "\276E";
+  background-color: #ccc;
+  width: 80px;
+  height: 80px;
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.images-slider button.slick-next {
+  right: 0px;
+  z-index: 10;
+}
+.images-slider button.slick-prev {
+  left: 0px;
+  z-index: 10;
+}
+
+.images-slider button.slick-next::before {
+  color: gray;
+  content: "\276F";
+  background-color: #ccc;
+  width: 35px;
+  height: 35px;
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.images-slider button.slick-prev::before {
+  color: gray;
+  content: "\276E";
+  background-color: #ccc;
+  width: 35px;
+  height: 35px;
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* .my-masonry-grid {
+  display: -webkit-box; 
+  display: -ms-flexbox; 
+  display: flex;
+  margin-left: -30px; 
+  width: auto;
+}
+.my-masonry-grid_column {
+  padding-left: 30px; 
+  background-clip: padding-box;
+} */
+
+/* Style your items */
+.my-masonry-grid_column > div {
+  /* change div to reference your elements you put in <Masonry> */
+
+  margin-bottom: 20px;
+}

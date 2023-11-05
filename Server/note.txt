@@ -1,0 +1,283 @@
+npm i express dotenv express-async-handler jsonwebtoken mongoose    .
+express-async-handler là một middleware giúp việc xử lý không cần dùng try catch khi gọi get,post,delete,patch
+Vào setting chọn settting json ở góc trên bên phải 
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
+  }, giúp gợi ý code khi code với jsx
+ --Thư viện bcrypt là một thư viện mã hóa dùng để bảo vệ mật khẩu trong ứng dụng. Nó cung cấp các phương thức mã hóa mật khẩu mạnh mẽ và an toàn.
+ ---Thư viện dotenv giúp bạn đọc các biến môi trường từ tệp .env và đặt chúng vào quá trình chạy của ứng dụng, làm cho việc quản lý biến môi trường trở nên dễ dàng. Bạn có thể sử dụng dotenv để tải các giá trị cấu hình từ tệp .env và sử dụng chúng trong mã nguồn của mình.
+**Lưu ý muốn sử dụng import express from "express"; thì trong packeJjson phải có thêm thuộc tính  "type": "module",. Còn nếu không thì ta sử dụng
+const express = require("express");
+
+- Dùng bcrypt để hash password(mã hóa password)
+B1 Vào model của user 
+userSchema.pre("save", async function (next) {
+  if (!this.isModerfied("password")) {
+    next();
+  }
+  const salt = bcrypt.genSaltSync(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+Trước khi lưu vào db, nó phải vào function để hass password.
+ta sẽ set dk là nếu password thay đổi thì hash lại password còn không thì koh thực hiện hash password. (!this.isModerfied và ta truyền vào field là password nếu là fasle thì không có sự thay đổi gì.)
+
+- Tạo một midleware để xử lý lỗi
+Sau dó gọi nó vào router index.js
+const {} = require()
+
+Bài 4: Xử lý login (token, refreshToke)
+Đầu tiên ta tạo một method để so sánh password trước khi tạo token trong model user
+Sau đó vào controller user kt có email và đòng thời password có đúng hay không rồi return về kq
+* Lưu ý khi trả về data ta phải dấu trường password và role đi bằng cascgs lấy bằng destructurings
+  const { password, role, ...usersData } = response.toObject();
+* ...usersData là lấy những thằng còn lại và hiển thị ra
+    return res.status(200).json({
+      sucess: true,
+      userData: usersData,
+    });
+* nếu không .toObject() thì nó sẽ trả về kiểu instand của mongo chứ không trả về kiểu object thông thường nên ta phải ép kiểu nó về object 
+ - Tạo token.
+ B1 Tạo một mã secret trong .env được sử dụng để làm phần kiểm tra tính xác thực (authentication) và chữ ký số (digital signature) của token.Nó đóng vai trò quan trọng trong việc đảm bảo tính bảo mật và không thể giả mạo của token
+ B2 vào middleware tạo một funtion để cung cấp 3 thành phần chính đó là (uId,role, exprisIn).
+ B3 vào phương thức login trong controler  gọi nó ra từ middleware và truyền vào id và role cho nó
+ -Tạo refreshToken dùng để khi token nó hết hạn thì nó sẽ dùng refreshToke để tạo lại một accessToken và nếu như cả refreshToke cũng hết hạn thì buộc phải đăng nhập lại. Thường là thời gian hết hạn cảu refreshToke sẽ dài hết accessToken
+  B1 vào middleware tạo thêm phương thức refreshToke tương tự như accessToken chỉ cần truyền vào id và tg hết hạn sẽ lâu hơn.
+  B2 gọi nó vào trong controller để lưu nó vào cookie.
+  B3 Ta phải lưu refreshToke vào db vì để quản lý phiên đăng nhập của token. Kt xem người dùng  có quyền truy cập hay không.
+  B4 install cookie parse vào server sau đó vào server.js gọi nó và sử dụng.
+  B5 Vào user controller lưu vào cookie
+   res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      // '7d' số miligiay trong 7 ngày
+    });
+  - Xử lý phần kt xem tài khoản đó có được phép get dữ liệu về dc không.
+  B1 tạo một middleware để xử lý xác thực token dc gửi từ khác client gửi lên 'verifyToken'.
+  B3 gọi middleware đó trướ khi gọi tới getCurent
+
+Bài 6 làm việc với refreshToken khi accessToken hết hạn
+B1 vào controller users tạo phương thức để kt trong cookie có responses hay không
+** Coi kỹ từng dòng code trong đó
+B2 vào router ra dùng post và bỏ qua middleware.
+=>Luồng đi sẽ là Khi ta post login với email mà password ta sẽ có một accessToken có thời hạn là bao lâu đó. Khi nó hết hạn Token thì mình dẽ post refreshToken để cấp lại token mới rồi lấy nó vào dán vào beare token để lấy dc dữ liệu
+-Đó là khi refreshToken còn hạn, bây h ta sẽ làm khi refreshToken hết hạn thì phương thức errHandler sẽ bắt lỗi. Và người dùng phải đăng nhập lại
+
+Làm phần logout ở server.
+ - ta sử dụng phương thưc findOneAndUpdate là vì ta cafnan tìm resfresToken trong db
+ await User.findOneAndUpdate(
+    //tìm kiếm where
+    { resfresToken: cookie.refreshToken },
+    //khi có rồi thì set nó về  ''
+    { resfresToken: " " },
+    //lưu thay đổi
+    { new: true }
+  );
+  Ta vào router sử dụng phương thức get để sử dụng logout
+  => Luồng đi sẽ là khi người dùng login thì sẽ cấp token và token được lưu ở cookie thông qua tên resfresToken. Sau khi logout thì xóa refreshToken
+
+bài 7. reset mk thông qua email
+B1 tạo phương thức trong controller user
+B2 ta sẽ tạo một method trong model user để lưu token khi người dùng quên mật khẩu.
+- Tải thư viện npm i crypto-js để hash chuổi token ngẫu nhiên. sau đó coi kĩ phương thức đó.
+ - Vào controller user lấy email từ query là query mà mình truyền đi
+ - Coi kĩ từng dòng
+ -Lấy phương thức đã tạo để cấp token quên mật khẩu từ model sau đó lưu nó lại, nó mới lưu vào db
+
+ B3 làm phần gửi qua gmail
+  + Vô trong google app password => link có chữ 'account' => nhập password => Bật chế độ bảo mật 2 lớp => vào app password chọn email và windows computer => copy đoạn mã
+ + Sau đó vào evn lưu tên chứa đoạn mã đó và tên email của đoạn mã đó
+ + tải thư viện npm install nodemailer để thực hiện gửi gmail
+ + Tạo 1 file tên là "sendMail" cấu hình email trong utils lấy từ trang nodemailer::nodemailer và cấu hình lại cho nó
+ + trong .env tạo mã password vừa nhận được tư email dk, tạo email của người mà nhận password.
+ + Và ta vào sendMail nhận 2 đối số là email và html,
+ ++ Lưu ý khi bên controler user gọi thằng sendMail thì ta có truyền vào 2 đối số là email và html. Thì bên file sendMail nhận 2 giá trị làm đối số
+ + ở phần controler user return về kq.
+ + phải router user định nghĩa phương thức get để tạo đường dẫn cho nó.
+  + Vào postmen test thưr với phương thức get và chọn mục paramater và nhập email của người nhận vào.
+  Và cuối cùng khi vào email ta chọn phần file rác sẽ thấy đoạn text dc gửi. Khi click vào chữ click here thì ta sẽ chuyển đến một trang có đường dẫn là "http://localhost:5000/api/user/reset-password/dhshdhsdhshds" là đường dẫn mình đã tạo
+
+  B4 h ta sẽ làm phần cho router reset-password.
+  coi kỹ từng dòng code 
+  => Luồng đi test sẽ là: Ta vào router forgotPassword lấy email từ client gửi lên nó sẽ gửi tới email đó một đôạn text. => vào email kiểm tra và click vào thì nó trang khác kiểm theo token => ta copy token đó => Vào postman test tới phần resetPassword mình nhập vào phần body -x-www-form-urlencoded nghĩa là client trả về cho ta thì server nhận nó bằng body. Và server lấy token và password đã thay đổi mk mà client thay đổi xử lý cập nhật lại trong db
+  =>Test thành công=> Vào router login nhập email của người gửi và password thay đổi coi thử nó có trả về thông tin đúng hay khoong. Nếu nhập mk củ mà nó cũng ra thì là sai phải nhập mk mới mới dc
+
+  Bài 8 CRUD cho user
+  - Viết query get tất cả user
+  - Mà user nào có quyền là admin mới lấy hết dc data
+  B1 vào file verifyToken kt role của user đó có phải là admin hay không.
+ B2 vào router user định nghĩa phương thức get và nhận vào 2 midlleware. khi get thì phải cần nhập vào token để kt hợp lệ nằm trong middleware verifyToken. middleware thứ 2 là kt xem user đó có quyền là admin hay không trước khi get hết ra
+ => kiểm tra sẽ là vào login cung cấp email và password đê nhận token, sau đó coppy token đó dán vào beare token trước khi get hết ra
+ -Viết phần xóa user thông qua id. 
+ B1 ta sẽ lấy _id từ query của client gửi về 
+ B2 xét nếu người dùng chưa nhập _id thì báo lỗi.
+ B3 gọi hàm findByIdAndDelete và truyền vào _id.
+ B4 vào router của user gọi phwong thức delete và chỉ truyền vào "/". Và nếu muốn xóa thì người đó phải có token hợp lệ và role là "admin". Đối với "/:id" thì khi gọi lấy {id} = req.params. Nếu ta dùng query thì khi vào postmen ta phải chọn params và có key là "_id" và value là id của user cần xóa.
+ -Viết query cho phần update
+  B1 ta sẽ lấy user mà đã kt token hợp lệ và gán vào decode và decode dc gán cho req.user. Nên khi làm update ta chỉ cho phép user bình thường dc sửa chính user của mình.
+  B2 lấy id từ req.user
+  B3 kt có id hay không và object body có đang bằng 0 hay không.
+  B4 dùng phương thức findByIdAndUpdate truyfen vào id và req.body là dữ liệu client nhập vào và server sẽ nhận và xử lý, {new: true } là sẽ lấy dữ liệu mới nhâts.
+  B5 Vào router xét phương thức patch và cho nó router "/current" xen vào là 1 middleware xác nhận token hợp lệ
+  B6 Khi vào postmen test thì ta lấy token của user muốn sửa dán vào beare token sau đó chọn body => www-form nghĩa là client nhập vào filed nào cần sửa đổi
+  - Viết query update được tất cả user
+  B1 ta dùng {uid} = req.params là ta truyền lên đường dẫn trực tiếp.
+  B2 ta cũng kt tt như trên
+  B3 Vào router cấu hình đường dãn là "/:uid" phải trùng với uid khi req.params, truyền vào middleware xác nhận token, middleware xac nhận role có phải là admin hay không.
+  B4 Test chọn beare token dán token có quyền là admin, truyền id lên trên url,id là user mà mình muốn update chọn Body=>www-form và nhập field cần sửa đổi cho id đó 
+
+- Làm việc với Products
+ + Tạo mới Products
+ B1 Ta tạo model cho products, ta có thêm nhìu trường (Coi kĩ trong model đó, ta có thêm slug)
+ B2 Ta tạo một controller product để tạo phương thức post. trong đó ta install thư viện  npm i slugify dể mã hóa tiếng việt.
+ B3 ta kt người dùng có nhập vào các trường hay chưa 
+ B4 ta dùng thư viện slugify cho trường title
+ B5 module export nó ra
+ B6 Vào router tạo định kiểu phuowgn thức post cho nó bằng router, gọi product từ controller và export router ra.
+ B7 vào file index.js của router định kiểu đường dẫn cho product, require product từ router product.
+ + Get id sản phầm
+ B1 {pid} = req.params. Nếu dúng với params thì ta truyền id lên url luôn
+ B2 Vào router product định nghĩa ":pid" là id trên url
+ + Update id product phải có quyền admin mới update được
+   const updateProduct = await Product.findByIdAndUpdate(pid, data, {
+    new: true,
+  });
+  - muốn update slug trường nào thì truyfen nó vào slugify
+  + Delete products phái có quyền admin mới xóa được
+
+Bài 10 Filtering, sorting & pagination products 
+  Coi kĩ từng dòng 1 trong phần getProducts có rất nhiều cái hay cần phải coi đối với filtering
+  => Luồng đi: Lấy các query từ người nhập, xóa bỏ các query đặc biệt bằng forEach và delete trong mongoose. Bây h ta sẽ chuyển các query còn lại thành kiểu JSON để mình có thể thao tác với các phương thức so sánh như gte,gt,lte,lt. Ta sủ dụng phương thức replace nhằm thêm dấu "$" vào trước các phương thức so sánh. Nhằm mục đích khi ta só sánh ta chỉ cần gt=400 thì nó sẽ tự động thêm vào là $gt=400. 
+  *Lưu ý rằng khi dùng với Number thì ta mới được dùng gt,lt còn nếu ta so sánh kiểu String thì ta phải dùng các phương thức kkhcs như $regex,...
+  => Sau khi đã thêm $ vào các phương thức so sánh. Ta sẽ chuyển nó về kiểu String để lấy các query của người nhập vào để so sánh. Ta sẽ gán nó vào một biến để tìm trong Product với phương thức find(formatedQueries) trong đó formatedQueries là người dùng nhập vào để tìm kiếm. Khi kt trên postmen ta vào phần params ta nhập price[gt] là lớn hơn.
+  *Quan trọng là khi làm như vậy xong thì nó sẽ chưa trả về kq vì nó chưa được thực thi. Ta dùng try catch để thực thi thông qua phương thức .exec().
+  * Khi test trên postmen ta vào params ta chọn key và value. Nó sử dụng  let queryCommand = Product.find(formatedQueries); 
+  trong đó formatedQueries là query mà người dùng nhập vào.
+
+  + Làm với sắp xếp
+  =>ta cần chuyển các value cần sắp xếp về mảng sau đó mới nó thành string (["price","name"] => "price name"). Sắp xếp theo phương thức sort(sortBy) trong đó sortBy là các trường cần so sánh như 'price name'. So sánh có trong databse Products.  queryCommand = queryCommand.sort(sortBy);
+  - Nếu muốn sắp xếp theo giảm dần là khi test ta truyền -price
+
+  +Làm việc khi người dùng chỉ lấy giá trị mong muốn
+  if(req.query.field) là key mà người dùng phải nhập là field
+  Sau đó ta select trong db của mình để lấy ra các trường như thế 
+
+  + làm việc với phân trang, coi kĩ trong controller
+  Khi test nếu ta không truyfen page và limit thì nó sẽ mặc định lấy giá trị trong controller để get sp. Nếu ta truyền vào page là 2 thì nó sẽ tính toán skip nó sẽ bỏ qua 2 giá trị đầu tiên. Còn limit là muốn lấy bao nhiu object trong mỗi trang
+
+  - Làm phần Rating
+  B1 Ta phải lấy được id của người đang đánh giá sp từ token trả về.
+  B2 Lấy sao, comment và id của sp được đánh giá từ client.
+  B3 Kt nếu koh có sao hoặc id của sp
+  B4 Tìm kiếm id của sp được đánh giá đó trong db Product thông qua id sp đang dc đánh giá.
+  B5 kt id của người đang đánh giá có đánh giá sp này chưa
+  + Nếu trả về true thì nó sẽ không thêm đánh giá đó vào sp mà chỉ cho phép update lại đánh giá đó.
+  Lưu ý khi ta so sánh thằng postedBy là ,một objectId ở mongoDB lúc đó so sánh ===id là nó sẽ khồn trùng kiểu dữ liệu mặc dù là nó đúng, nên ta sẽ chuyển nó về kiểu string như id là el.postedBy.toString()
+  +  Còn nếu là false thì người dùng mới đánh giá lần đầu nên ta push nó vào phần ratings của sp đó.
+ 
+ - Làm phần update ratings 
+ B1 Trước hết ta sẽ sửa lại phương thức some() thành find() Vì khi update thì ta cần biết id sp đó thì thằng find thì nó sẽ tìm object và trả về kq, nó cúng giống như some nhưng some thì trả về true false còn find thì trả về object 
+ + Coi kĩ từng dòng một
+
+ - Làm phần tính trung bình của sp đó có bao nhiêu sao
+ + coi kĩ từng dòng một dùng phương thức Math.round để làm tròn số.
+
+ Bài 12 tạo file productCategory
+ -trong file productCategory chỉ làm 4 phương thức CRUD
+ -file blog.js là file dùng để quảng cáo bài đăng 
+  + Ta cũng tạo các phương thức CRUD
+  + Ta làm phần like hay dislike bài đăng
+  + B1 ta sẽ tạo một mảng là likes và disLikes trong model blog.js dùng để lưu những id của user 
+  + B2 Khi vào controller của blog thì ta sẽ lấy id của user đang đăng nhập,nhập id của blog đang quảng cáo.
+  + B3 Ta phải kiểm tra xem trong mảng disLike đã có user đó hay chưa nếu có thì xóa nó khỏi mảng disLikes. Buộc người đó phải chọn lại likes nó mới thêm vào mảng likes.
+  * Vì một người không thể  vừa chọn likes và cả disLikes
+  + B4 Tìm kiếm trong mảng likes có user đó đã like hay chưa, nếu chưa có thì dùng phương thức $push để thêm vào mảng likes, còn nếu tìm kiếm dc user đó đã nằm trong mảng dislikes thì dùng phương thức $pull để xóa nó khỏi mảng dislikes.
+
+  + khi ta get by id của blog thì ta dùng populate để hiển thị chi tiết nhưng thông tin của người đã likes
+
+  + Ta sẽ xử lý phần số lượt view của bài blog này
+   Nếu người dùng gọi một bài blog nghĩa là khi get theo id sẽ hiển thị bài blog đó lên, khi hiển thị lên thì số lượt view của blog đó sẽ tăng lên 1 view. Để làm dc điều này thid trong phần get theo id blog thì ta sẽ update lượt view của bài blog lên 1 bằng phương thức $inc.
+
+   -Bài 14 Làm phần tạo CRUD cho brand 
+   - Sau đó làm phần cho model coupon.js
+   + Khi tạo phương thwucs create cho coupon. Ta dùng spread để thay đổi giá trị ngày khi người dùng chỉ nhập vào số ngày và nó sẽ tự convert sang ngày tháng năm
+    const response = await Coupon.create({
+      ...req.body,
+      expiry: Date.now() + +expiry * 24 * 60 * 60 * 1000,
+    });
+    +expiry là chuyển nó sang kiểu Number vho nó trùng kiểu dữ liệu khi người dùng nhập vào
+    + Còn nếu làm việc với update khi muốn sửa ngày hết hạn, thì ta phải tách nó ra kiểm tra
+    if (data.expiry)
+      data.expiry = Date.now() + +data.expiry * 24 * 60 * 60 * 1000;
+      const response = await Coupon.findByIdAndUpdate(cId, data, {
+      new: true,
+    });
+
+    Bài 15 tạo model Order
+    Lưu ảnh trên cloundinary
+    Tạo tài khoản để lấy thông tin như scret,api, ...
+    B1 Lưu các thông tin vào .env
+    B2 Tạo một file cloundinary.config.js ở folder config để ta cấu hình lại nơi lưu ảnh với params: {folder:"cuahangdientu}
+    B3 Ta lên cloundinary tạo folder giống như fodler mà mình đã truyền vào params trong file config (Media Libary -> Folder -> Home -> create folder)
+    B4 Vào controller của product tạo một phương thức upload.
+    B5 Vào router gọi nó, gọi cloundinary từ folder config và truyền nó làm middleware .single là ta upload 1 ảnh ta truyền vào 1 key, key đó khi test postmen ta vào body => form-data khi ta nhập key thì ta phải nhập trùng tên key trong single và chuyển key thành file và value  ta truyfen 1 ảnh bất kì ->Ok 
+    Còn nếu muốn upload nhìu ảnh thì sửa lại thành array và truyền vào số lượng ảnh cần up  uploader.array("image", 10),
+
+    Bài 16 Ta làm phần địa chỉ cho user
+    B1 Ta tạo một phương thức updateAddress trong controller User.
+    B2 Nó chỉ update chính nó nên ta sẽ lấy id của user mà đã cáp token
+    B3 lấy address từ client nhập vào
+    B4 Kt xem trong mảng đó có địa chỉ đó chưa,nếu chưa có thì thêm vào, còn có rồi thì không thêm bằng toán tử $addToSet
+    
+    -Tiếp theo ta làm tới phần Order
+    B1 Ta sẽ lấy giỏ hàng của thằng User (Khi mua hàng thì sẽ được lưu vào trường cart trong user đó)
+    B2 thì tìm id từ giỏ hàng đó và chỉ lấy truowfg giỏ hàng thôi.
+    const userCart = await User.findById(id).select("cart");
+
+    * Vì lúc ta viết cho user ta quên viết phương thức thêm vào giỏ hàng, nên h ta sẽ viết
+    B1 lấy id của người đang đăng nhập 
+    B2 lấy các dữ liệu mà người dùng nhập vào khi thêm vào giỏ hàng dựa vào các thuộc tính cart trong model User
+    B3 tìm id sản phẩm đó
+    B4 tìm kiếm object sản phẩm đó thông qua id sản phẩm vừa tìm có trong giỏ hàng của user hay khônbg.
+    B5 Nếu không có id đó trong giỏ hangd thì ta sẽ push các thông tin của client vào giỏ hàng.
+    B6 Nếu có object sp đó trong giỏ hàng thì ta chỉ update nó.
+    B7 kt nếu color của người dùng nhập vào trùng với color của object sp đó thì người dùng sẽ cập nhật lại số lượng
+    B7.1 Nó sẽ dùng updateOne để tìm kimse dựa theo dk là tìm kiếm object alreadyCart và gán nó vào cart.
+    B7.2 giá trị thứ 2 là giad trị cần thay đổi bằng $set .$ là tượng trưng có object alreadyCart .quantity là tham chíu tới trường quantity.
+      if (alreadyCart.color === color) {
+      const response = await User.updateOne(
+        {
+          cart: { $elemMatch: alreadyCart },
+        },
+        { $set: { "cart.$.quantity": quantity } },
+        { new: true }
+      );
+      }
+    -Nếu như ta post object đó mà object đó đã có rồi thì no sẽ không làm j hết nghĩa là nó sẽ không push vào mảng
+  
+  Bài 17 Viết tiếp api cho Order
+  -Viết cho phương thwucs tạo đơn hàng từ giỏ hàng của khách hàng
+  B1 Lấy id của user đag đnag nhập
+  B2 Lấy phieus giảm giá
+  B3 Tìm id đó trong User để lấy giỏ hàng ra
+  B4 Ta sẽ gán các thông tin của giỏ hàng khách hàng vào các trường trong Order bằng phuowg thức map
+  B5 Tính tổng tiền khi chưa có giảm giá bằng reduce
+  B6 tính lại tổng tiền khi có phiếu giảm giá và làm trong tới hàng nghìn
+  B7 Lưu tất cả thông tin vào Order gồm các field đã gán,tổng tiền và order bởi ai
+  - ta sẽ làm phần giảm giá
+    B1 Vì ta lưu mã giảm giá ở một model riêng nên ta sẽ gọi nó vào
+    B2 ta sẽ nhận coupon từ client trả về
+    B3 Ta kt coupon,nếu có coupon thì đầu tiên ta sẽ tìm object của coupon đó.
+    B4 Tính lại total từ discount trong coupon 
+    B5 tạo create cho Order
+  Mỗi lần ta post lên là nó sẽ tạo mới một data trong Order
+   -Khi làm get đơn hàng của chính nó thì ta sẽ tìm dk vid trong đơn hàng id nó lưu là id của dơn hàng chứ không phải id của người mua, nên ta sẽ dùng find và tìm theo dk find({ orderBy: id }) orderBy là id của người mua.
+
+   -Data cho project, sau khi cào đưuọc data và lưu vào mảng trong file json.
+   Ta thực hiện tạo một file trong controller để đẩy dữ liệu vào products, và trong router cũng tạo file insertData
+   B1 sau khi thực hiện phương thức insert trong controller thì ta tải REST api.
+   B2 Tạo một file có tên là insert.http và đưa đường dẫn tới localhost trong routers insert.js
+    ###
+    POST http://localhost:5000/api/insert/
+    B3 Click vào send requets.
+    -Tiếp theo ta sẽ import data category.
+    
