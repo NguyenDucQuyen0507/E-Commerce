@@ -47,3 +47,10 @@ export const apiCreateOrder = (data) =>
     method: "POST",
     data,
   });
+
+export const apiGetUserOrder = (params) =>
+  axios({
+    url: "/order/",
+    method: "GET",
+    params,
+  });

@@ -83,6 +83,7 @@ const CheckOut = ({ navigate, dispatch }) => {
                 ) / +23500
               ),
               address: current?.address,
+              status: "Successed",
             }}
             setIsSuccess={setIsSuccess}
           />

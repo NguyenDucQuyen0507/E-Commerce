@@ -54,13 +54,20 @@ const asyncHandler = require("express-async-handler");
 
 const createOrder = asyncHandler(async (req, res, next) => {
   const { id } = req.user;
-  const { products, total, address } = req.body;
-  console.log(address);
+  const { products, total, address, status } = req.body;
   if (address) {
     //Nếu có địa chỉ thì cập nhật đía chỉ và reset giỏ hàng về [] nếu đã thanh toán thành công.
     await User.findByIdAndUpdate(id, { address, cart: [] }, { new: true });
   }
-  const rs = await Order.create({ products, total, orderBy: id });
+  const data = {
+    products,
+    total,
+    orderBy: id,
+  };
+  if (status) {
+    data.status = status;
+  }
+  const rs = await Order.create(data);
   return res.json({
     success: rs ? true : false,
     rs: rs ? rs : "Something went wrong",
@@ -82,15 +89,84 @@ const updateStatus = asyncHandler(async (req, res) => {
   });
 });
 //làm phần get đơn hàng cho chính nó cho đơn hàng
-const getOrder = asyncHandler(async (req, res) => {
+const getOrderUser = asyncHandler(async (req, res) => {
   const { id } = req.user;
-  //khi lưu trong order thì id là tên của đơn hàng đó
-  //nên ta sẽ tìm dựa trên orderBy là id của người mua đơn hàng đos
-  const response = await Order.find({ orderBy: id });
-  return res.json({
-    success: response ? true : false,
-    rs: response ? response : "Something went wrong",
-  });
+  const queries = { ...req.query };
+  const exculdeFields = ["limit", "sort", "page", "field"];
+  exculdeFields.forEach((item) => delete queries[item]);
+  let queryString = JSON.stringify(queries);
+  queryString = queryString.replace(
+    /\b(gte|gt|lte|lt)\b/g,
+    (match) => `$${match}`
+  );
+  const formatedQueries = JSON.parse(queryString);
+  // //*Filtering
+  // if (queries?.title)
+  //   formatedQueries.title = { $regex: queries.title, $options: "i" };
+  // if (queries?.category) {
+  //   formatedQueries.category = { $regex: queries.category, $options: "i" };
+  // }
+  // // tìm kiếm theo nhiều color
+  // let colorQueryObject = {};
+  // if (queries?.color) {
+  //   delete formatedQueries.color;
+  //   const colorArr = queries.color?.split(",");
+  //   const colorQuery = colorArr.map((el) => ({
+  //     color: { $regex: el, $options: "i" },
+  //   }));
+  //   colorQueryObject = { $or: colorQuery };
+  // }
+
+  //tìm kiếm theo nhìu trường
+  // let searchProducts = {};
+  // if (queries?.q) {
+  //   delete formatedQueries.q;
+  //   const orConditions = [
+  //     { title: { $regex: queries.q, $options: "i" } },
+  //     { brand: { $regex: queries.q, $options: "i" } },
+  //     { catego: { $regex: queries.q, $options: "i" } },
+  //     { color: { $regex: queries.q, $options: "i" } },
+  //   ];
+  //   searchProducts = { $or: orConditions };
+  // }
+  // const generalQuery = {
+  //   ...formatedQueries,
+  //   ...colorQueryObject,
+  //   ...searchProducts,
+  // };
+
+  const qr = { ...formatedQueries, orderBy: id };
+  //tìm kiếm theo orderBy là tìm tất cả sp của id đó.
+  let queryCommand = Order.find(qr);
+  //*Sorting
+  // => acd,vds => [acd,vds] => acd,vds
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(",").join(" ");
+    queryCommand = queryCommand.sort(sortBy);
+  }
+  //* Field Limiting là lấy các trường mình cần lấy
+  if (req.query.field) {
+    const field = req.query.field.split(",").join(" ");
+    //lấy giá trị value của key đó
+    queryCommand = queryCommand.select(field);
+  }
+  //* pagination
+  const page = +req.query.page || 1;
+  const limit = +req.query.limit || process.env.LIMIT_PRODUCTS;
+  const skip = (page - 1) * limit;
+  queryCommand.skip(skip).limit(limit);
+  try {
+    const response = await queryCommand.exec();
+    //đếm có bao nhiêu kq
+    const counts = await Order.find(qr).countDocuments();
+    return res.status(200).json({
+      counts,
+      success: response ? true : false,
+      orders: response ? response : "Cannot get product",
+    });
+  } catch (error) {
+    throw new Error(error.message);
+  }
 });
 //làm phần get đơn hàng cho admin
 const getByAdminOrder = asyncHandler(async (req, res) => {
@@ -103,6 +179,6 @@ const getByAdminOrder = asyncHandler(async (req, res) => {
 module.exports = {
   createOrder,
   updateStatus,
-  getOrder,
+  getOrderUser,
   getByAdminOrder,
 };

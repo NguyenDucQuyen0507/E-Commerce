@@ -14,7 +14,7 @@ const MemberLayout = () => {
       <div className="w-[330px] flex-none">
         <SideBarMember />
       </div>
-      <div className="flex-auto h-full bg-gray-100 min-h-screen overflow-hidden ">
+      <div className="flex-auto bg-gray-100 min-h-screen overflow-hidden ">
         <Outlet />
       </div>
     </div>

@@ -1211,3 +1211,12 @@ B2 Ở trang Personal ta dùng param.get("redirect") để lấy đường dẫn
         navigate(params.get("redirect"));
     }
 => Đường đi: myCart click checkout nuế chưa có address thì chuyển hướng tới trang personal cập nhật address và nhận địa chi url của trang myCart để khi cập nhật thành công thì chuyển hướng đến trnag myCart
+
+Bài 87 Quản lý lịch sử mua hàng. Là người dùng xem đơn hàng mà mình đã mua.
+B1 Vào controllers của Order phương thức getOrderUser ta cũng làm tương tự như getProducts. Có khác là khi ta tìm kiếm  Order.find thì ta truyền vào orderBy: id là tìm trong Order đó có id của người dùng thì lấy người đó ra
+    const qr = { ...formatedQueries, orderBy: id };
+    //tìm kiếm theo orderBy là tìm tất cả sp của id đó.
+    let queryCommand = Order.find(qr);
+B2 Ta tạo apis getUserOrder trong folder apis.
+B3 Trong trang History.jsx ta gọi api đó ra là nó sẽ tìm kiếm đơn hàng của user đó.
+B4 Bây h ta sẽ hiển thị sản phẩm ra

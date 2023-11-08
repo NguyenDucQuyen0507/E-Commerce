@@ -11,7 +11,7 @@ const OrderItem = ({
   defaultQuantity = 1,
   dispatch,
 }) => {
-  console.log(el);
+  // console.log(el);
   const [quantity, setQuantity] = useState(() => defaultQuantity);
   const hanldeQuantity = (number) => {
     if (!Number(number) || Number(number) < 1) {

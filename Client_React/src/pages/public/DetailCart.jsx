@@ -4,7 +4,7 @@ import withBaseComponent from "hocs/withBaseComponent";
 import { useSelector } from "react-redux";
 import numeral from "numeral";
 import { updateCart } from "store/users/userSlice";
-import { Link, createSearchParams } from "react-router-dom";
+import { createSearchParams } from "react-router-dom";
 import { BsFillBagHeartFill } from "react-icons/bs";
 import path from "utils/path";
 import Swal from "sweetalert2";
@@ -91,13 +91,6 @@ const DetailCart = ({ location, dispatch, navigate }) => {
               <ButtonClick fw handleClick={handleUpdateAddress}>
                 Check Out
               </ButtonClick>
-              {/* <Link
-                target="_blank"
-                className="px-4 py-2 rounded-md text-white bg-main hover:bg-[#333] font-medium mt-5 flex justify-center"
-                to={`/${path.CHECKOUT}`}
-              >
-                Check Out
-              </Link> */}
             </div>
           </div>
         </>
