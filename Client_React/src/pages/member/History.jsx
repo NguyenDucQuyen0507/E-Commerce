@@ -1,14 +1,24 @@
 import { apiGetUserOrder } from "apis/product";
-import { InputField, Pagination } from "components";
+import { CustomSelectOrderHistory, InputField, Pagination } from "components";
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { createSearchParams, useSearchParams } from "react-router-dom";
 import moment from "moment";
 import numeral from "numeral";
-const History = () => {
+import { optionsChoose } from "utils/contants";
+import { useForm } from "react-hook-form";
+import withBaseComponent from "hocs/withBaseComponent";
+const History = ({ navigate, location }) => {
   const [params] = useSearchParams();
-  console.log(params.get("page"));
+  console.log([...params]);
+  console.log(Object.fromEntries([...params]));
   const [orders, setOrders] = useState(null);
   const [count, setCount] = useState(0);
+  const {
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm();
   const fetchOrder = async (params) => {
     const response = await apiGetUserOrder({
       ...params,
@@ -20,10 +30,19 @@ const History = () => {
       setCount(response.counts);
     }
   };
+  const handleChangeStatus = (value) => {
+    // console.log(value);
+    navigate({
+      pathname: location.pathname,
+      search: createSearchParams({ status: value.value }).toString(),
+    });
+  };
   useEffect(() => {
-    fetchOrder();
-  }, []);
-  // console.log(products);
+    const qr = Object.fromEntries([...params]);
+    fetchOrder(qr);
+  }, [params]);
+  const status = watch("status");
+  console.log(status);
   return (
     <div className="w-full p-8 min-h-screen">
       <div className="bg-gray-100 flex justify-center items-center h-[50px]">
@@ -35,14 +54,25 @@ const History = () => {
       </div>
       <div className="w-full pr-4">
         <div className="flex justify-end py-4">
-          <InputField
-            nameKey="q"
-            // value={queries.q}
-            // setValue={setQueries}
-            placeholder={"Search product name ..."}
-            style={"w-[500px]"}
-            isHideLabel={true}
-          />
+          <form className="w-[45%] grid grid-cols-2 gap-2">
+            <div className="col-span-1">
+              <InputField
+                nameKey="q"
+                // value={queries.q}
+                // setValue={setQueries}
+                placeholder={"Search order ..."}
+                isHideLabel={true}
+              />
+            </div>
+            <div className="col-span-1 flex items-center">
+              <CustomSelectOrderHistory
+                options={optionsChoose}
+                value={status}
+                onChange={(val) => handleChangeStatus(val)}
+                fw={"w-full"}
+              />
+            </div>
+          </form>
         </div>
       </div>
       <div className="w-full">
@@ -128,4 +158,4 @@ const History = () => {
   );
 };
 
-export default History;
+export default withBaseComponent(History);

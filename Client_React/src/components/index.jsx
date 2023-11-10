@@ -35,6 +35,7 @@ export { default as PayPal } from "./Common/PayPal";
 export { default as InputForm } from "./Input/InputForm";
 export { default as SelectForm } from "./Input/SelectForm";
 export { default as MarkdownEditor } from "./Input/MarkdownEditor";
+export { default as CustomSelectOrderHistory } from "./Input/CustomSelectOrderHistory";
 export { default as YourCart } from "./Products/YourCart";
 export { default as OrderItem } from "./Products/OrderItem";
 

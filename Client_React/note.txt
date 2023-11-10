@@ -1212,7 +1212,7 @@ B2 Ở trang Personal ta dùng param.get("redirect") để lấy đường dẫn
     }
 => Đường đi: myCart click checkout nuế chưa có address thì chuyển hướng tới trang personal cập nhật address và nhận địa chi url của trang myCart để khi cập nhật thành công thì chuyển hướng đến trnag myCart
 
-Bài 87 Quản lý lịch sử mua hàng. Là người dùng xem đơn hàng mà mình đã mua.
+**Hay Bài 87 Quản lý lịch sử mua hàng. Là người dùng xem đơn hàng mà mình đã mua.
 B1 Vào controllers của Order phương thức getOrderUser ta cũng làm tương tự như getProducts. Có khác là khi ta tìm kiếm  Order.find thì ta truyền vào orderBy: id là tìm trong Order đó có id của người dùng thì lấy người đó ra
     const qr = { ...formatedQueries, orderBy: id };
     //tìm kiếm theo orderBy là tìm tất cả sp của id đó.
@@ -1220,3 +1220,43 @@ B1 Vào controllers của Order phương thức getOrderUser ta cũng làm tươ
 B2 Ta tạo apis getUserOrder trong folder apis.
 B3 Trong trang History.jsx ta gọi api đó ra là nó sẽ tìm kiếm đơn hàng của user đó.
 B4 Bây h ta sẽ hiển thị sản phẩm ra
+  B4.1 ta tạo một useEffect để gọi để gọi api lấy các đơn hàng trong Order và trong server Order khi lấy thành công thì ta đã lưu vào Order. Nên khi render ta map từ Order dể lấy các field cần thiết.
+
+B5 Bây h ta tạo một custom select để cho người dùng chọn 
+  B5.1 Ta cũng tạo một file tên là CustomSelectOrder.jsx
+  B5.2 Trong file đó trước hết ta phải tải thư viện react-select và import Select vào file sau đó return Select.
+  B5.3 Trong file CustomSelectOrder ta nhận các destructuring và truyền xuống cho Select với các giá trị 
+   <Select
+        isClearable
+        options={options}
+        value={value}
+        isSearchable
+        onChange={(val) => onChange(val)}
+        formatOptionLabel={(option) => <div>{option.label}</div>}
+      />
+    + options là mảng các giá trị dùng để render có 2 key là label và value.
+    + value là giá trị hiển thị
+    + onChange là khi người dùng click vào dropdown
+    + formatOptionLabel là nó sẽ lấy giá trị mảng của options để render ra dropdown.
+B6 Ở file History.jsx ta gọi nó ra và truyền vào props cho nó.
+  B6.1 Options là mảng ta đã tạo từ contant.
+  B6.2 onChange là sử setValue của useForm để set giá trị vào một key tùy chọn. Thì khi ng dùng click vào thay đổi dropdown thì nó sẽ lưu giá trị vào status
+  onChange={(val) => setValue("status", val)}. 
+  => Ở bên CustomerReviews nó xử lý onChang là nó sẽ lấy giá trị của mảng options làm giá trị thay đổi nên khi thay đổi nó sẽ gán vào giá trị của status
+  B6.3 Ta dùng watch cảu useForm để xem giá trị vừa gán vào status
+    const status = watch("status");
+    console.log(status);
+  * Lưu ý để xử lý lấy status từ client url xuống server thì phải.
+      B1 Đối với onChang ta không setValue nữa thay vào đó ta phải tạo một phương thức riêng biệt.
+      onChange={(val) => handleChangeStatus(val)}. Khi ta click vào dropdown nghĩa là onChang thay đổi lúc đó bên CustomSelectOrder nó truyền vào onChang props giá trị là 
+      onChange={(val) => onChange(val)} thì khi đó val nó chính là label và value của thằng mảng options
+      {
+      label: ""
+      value: ""
+      }.
+      B2 thì bên History khi truyền onChang cho thằng CustomSelectOrder làm props thì nó sẽ nhận dc giá trị label và value từ onChange của CustomSelectOrder. và truyền nó vào phương thức handleChangeStatus(val).
+      B3 Phương thức handleChangeStatus nhận destructuring là value là giá trị của mảng options. Sau đó dùng naviagte chia object thành 2 giá trị pathname và search. Trong đó search là ta sẽ tạo trên url giá trị status vừa được chọn đó chính là value.
+       search: createSearchParams({ status: value.value }).toString().
+      B4 Thì lúc này ta sẽ dùng [params] từ useSearchParams() để lấy giá trị của url đó.
+      Dùng useEffect chuyển đổi giá trị nhận được từ params thành một đối tượng {value:"cancelled"} và cuois cùng thì truyền đối tượng đó cho fetchOrder. Thì Server nó sẽ nhận là
+      {status:"cancelled"}.

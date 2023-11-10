@@ -21,7 +21,7 @@ const Products = () => {
   console.log(category);
   //lấy các giá trị param
   const [params] = useSearchParams();
-  // console.log(params);
+  console.log([...params]);
   const [product, setProduct] = useState(null);
   const [sort, setSort] = useState("");
   const fetchProductCategory = async (queries) => {

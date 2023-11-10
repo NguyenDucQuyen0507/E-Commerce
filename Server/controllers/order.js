@@ -100,6 +100,7 @@ const getOrderUser = asyncHandler(async (req, res) => {
     (match) => `$${match}`
   );
   const formatedQueries = JSON.parse(queryString);
+  console.log(formatedQueries);
   // //*Filtering
   // if (queries?.title)
   //   formatedQueries.title = { $regex: queries.title, $options: "i" };

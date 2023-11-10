@@ -274,3 +274,14 @@ export const StatusUser = [
     value: "Actived",
   },
 ];
+
+export const optionsChoose = [
+  {
+    label: "Cancelled",
+    value: "Cancelled",
+  },
+  {
+    label: "Successed",
+    value: "Successed",
+  },
+];

@@ -74,7 +74,7 @@ const CheckOut = ({ navigate, dispatch }) => {
               ) / +23500
             )}
             payload={{
-              products: current?.cart,
+              products: currentCart,
               total: Math.round(
                 currentCart?.reduce(
                   (accumulator, currentValue) =>
