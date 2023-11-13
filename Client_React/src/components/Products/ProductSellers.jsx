@@ -13,7 +13,7 @@ import { SelectOptions } from "components";
 import withBaseComponent from "hocs/withBaseComponent";
 import { showModal } from "store/categories/appSlice";
 import { ProductsDetails } from "pages/public";
-import { apiAddCartUsers } from "apis/user";
+import { apiAddCartUsers, apiWishlist } from "apis/user";
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import path from "utils/path";
@@ -72,10 +72,16 @@ const ProductSellers = ({
       }
     }
     if (flag === "WISHLIST") {
-      console.log("WISHLIST");
+      console.log(productData?._id);
+      const response = await apiWishlist(productData?._id);
+      if (response.success) {
+        dispatch(getCurrent());
+        toast.success(response.mes);
+      } else {
+        toast.success(response.mes);
+      }
     }
     if (flag === "QUICK_VIEW") {
-      console.log("pid", productData._id);
       dispatch(
         showModal({
           isShowModal: true,
@@ -116,10 +122,22 @@ const ProductSellers = ({
           {display && (
             <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-3 animate-slide-top">
               <span
-                title="Wishlist"
+                title="WishList"
                 onClick={(e) => handleClickOptions(e, "WISHLIST")}
               >
-                <SelectOptions icon={<BsFillSuitHeartFill />} />
+                <SelectOptions
+                  icon={
+                    <BsFillSuitHeartFill
+                      color={
+                        current?.wishlist?.some(
+                          (i) => i._id === productData?._id
+                        )
+                          ? "red"
+                          : ""
+                      }
+                    />
+                  }
+                />
               </span>
               {current?.cart?.some(
                 (el) => el.product?._id === productData._id
@@ -128,7 +146,7 @@ const ProductSellers = ({
                   onClick={(e) => handleClickOptions(e, "")}
                   title="Added cart"
                 >
-                  <SelectOptions icon={<BsFillCartCheckFill />} />
+                  <SelectOptions icon={<BsFillCartCheckFill color="green" />} />
                 </span>
               ) : (
                 <span
@@ -147,7 +165,7 @@ const ProductSellers = ({
             </div>
           )}
           <img
-            className="w-[274px] h-[274px] object-cover"
+            className="w-[274px] h-[200px] object-contain"
             src={
               productData?.thumb ||
               "https://as2.ftcdn.net/v2/jpg/04/48/42/99/1000_F_448429978_3QPKF8gDqqeuuO8A8ZGRHZ9Ih1ExftBz.jpg"

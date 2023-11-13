@@ -1258,5 +1258,20 @@ B6 Ở file History.jsx ta gọi nó ra và truyền vào props cho nó.
       B3 Phương thức handleChangeStatus nhận destructuring là value là giá trị của mảng options. Sau đó dùng naviagte chia object thành 2 giá trị pathname và search. Trong đó search là ta sẽ tạo trên url giá trị status vừa được chọn đó chính là value.
        search: createSearchParams({ status: value.value }).toString().
       B4 Thì lúc này ta sẽ dùng [params] từ useSearchParams() để lấy giá trị của url đó.
-      Dùng useEffect chuyển đổi giá trị nhận được từ params thành một đối tượng {value:"cancelled"} và cuois cùng thì truyền đối tượng đó cho fetchOrder. Thì Server nó sẽ nhận là
-      {status:"cancelled"}.
+      Dùng useEffect chuyển đổi giá trị nhận được từ params thành một đối tượng {value:"cancelled"} và cuois cùng thì truyền đối tượng đó cho fetchOrder. Thì Server nó sẽ nhận là {status:"cancelled"}. 
+  
+Bài 88 Wishlist  Danh sách yêu thích.
+B1 Ta tạo một phương trong controller User với mục đích là thêm sản phẩm được yêu thích vào trường wishlist.
+B2 Bên Server thì ta cũng lấy id của token và pid là id của sản phẩm đó.
+  - Tìm id của của người dùng trong db
+  - Kiểm tra id sản phẩm trong wishlish của người đó có bằng id sản phẩm được chọn hay không
+  ** Lưu ý khi sử dụng phương thức find để kt trong wishlish khi ta kt chuyển 
+  user.wishlist?.find((el) => el.toString() === pid); 
+  Vì là một thằn là objectId và một thằng string nên ta chuyển objectId thành string để cùn kiểu dữ liệu
+  - Nếu có id sp đó trong wishlish của người đó và ngườu dùng cũng chọn lại sp đó lần nữa thì no sẽ  xóa khỏi id sp đó ra khỏi danh sahcs wishlish bằng phương thức pull.
+  
+  - Và nếu chưa có thì thêm sp đó vào dánh sách wishlish bằng phương thức push.
+B3 ta cũng tạo routers cho nó và bên client ta cũng tọa một apis cho nó.
+B4 Sang component productSellers khi click vào wishlist thì ta sẽ gọi apis đó thì ta truyền vào pid của sp đó và nếu thành công thì dispatch lại getCurrent để cập nhật wishlish.
+
+B5 Bây h ta sang component Wishlist để render các wishlish đã ddwjocj thêm vào

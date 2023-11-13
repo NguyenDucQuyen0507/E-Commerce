@@ -1,4 +1,4 @@
-import { apiGetUserOrder } from "apis/product";
+import { apiDeleteUserOrder, apiGetUserOrder } from "apis/product";
 import { CustomSelectOrderHistory, InputField, Pagination } from "components";
 import React, { useState, useEffect } from "react";
 import { createSearchParams, useSearchParams } from "react-router-dom";
@@ -7,12 +7,20 @@ import numeral from "numeral";
 import { optionsChoose } from "utils/contants";
 import { useForm } from "react-hook-form";
 import withBaseComponent from "hocs/withBaseComponent";
+import { AiOutlineDelete } from "react-icons/ai";
+import Swal from "sweetalert2";
+import { toast } from "react-toastify";
+import useDebouce from "hooks/useDebouce";
 const History = ({ navigate, location }) => {
   const [params] = useSearchParams();
   console.log([...params]);
   console.log(Object.fromEntries([...params]));
   const [orders, setOrders] = useState(null);
   const [count, setCount] = useState(0);
+  const [queries, setQueries] = useState({
+    q: "",
+  });
+  const [render, setRender] = useState(false);
   const {
     handleSubmit,
     watch,
@@ -37,12 +45,52 @@ const History = ({ navigate, location }) => {
       search: createSearchParams({ status: value.value }).toString(),
     });
   };
+  const handleOrderUser = (orId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to delete this order?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const response = await apiDeleteUserOrder(orId);
+        if (response.success) {
+          re_render();
+          toast.success(response.mes);
+        } else {
+          toast.error(response.mes);
+        }
+      }
+    });
+  };
+
+  // const queriesDebouce = useDebouce(queries.q, 800);
+  // useEffect(() => {
+  //   if (queriesDebouce) {
+  //     navigate({
+  //       pathname: location.pathname,
+  //       //tạo key trên url bằng với tên mà mình tìm kiếm
+  //       search: createSearchParams({ q: queriesDebouce }).toString(),
+  //     });
+  //   } else {
+  //     navigate({
+  //       pathname: location.pathname,
+  //     });
+  //   }
+  // }, [queriesDebouce]);
+
+  const re_render = () => {
+    // có sự thay đổi nó mới re-render lại order để cập nhật lại
+    setRender(!render);
+  };
   useEffect(() => {
     const qr = Object.fromEntries([...params]);
     fetchOrder(qr);
-  }, [params]);
+  }, [params, render]);
   const status = watch("status");
-  console.log(status);
   return (
     <div className="w-full p-8 min-h-screen">
       <div className="bg-gray-100 flex justify-center items-center h-[50px]">
@@ -56,13 +104,13 @@ const History = ({ navigate, location }) => {
         <div className="flex justify-end py-4">
           <form className="w-[45%] grid grid-cols-2 gap-2">
             <div className="col-span-1">
-              <InputField
+              {/* <InputField
                 nameKey="q"
-                // value={queries.q}
-                // setValue={setQueries}
+                value={queries.q}
+                setValue={setQueries}
                 placeholder={"Search order ..."}
                 isHideLabel={true}
-              />
+              /> */}
             </div>
             <div className="col-span-1 flex items-center">
               <CustomSelectOrderHistory
@@ -98,10 +146,20 @@ const History = ({ navigate, location }) => {
                       1
                     : index + 1}
                 </td>
-                <td className="py-1 px-2 text-sm">
+                <td className="py-2 px-2 text-sm flex flex-col gap-3">
                   {el?.products?.map((or, index) => (
                     <span key={index} className="flex flex-col">
-                      {or.title} - {or.color}
+                      <div className="flex gap-3 items-center">
+                        <img
+                          src={or?.thumbnail}
+                          alt=""
+                          className="w-10 h-10 object-contain"
+                        />
+                        <div className="flex flex-col ">
+                          <span className="text-main">{or?.title}</span>
+                          <span>Quantity: {or?.quantity}</span>
+                        </div>
+                      </div>
                     </span>
                   ))}
                 </td>
@@ -112,39 +170,14 @@ const History = ({ navigate, location }) => {
                 <td className="py-1 px-2 text-sm">
                   {moment(el.createdAt).format("DD/MM/YYYY")}
                 </td>
-                {/* <td className="py-1 px-2">{el.price}</td>
-                  <td className="py-1 px-2 text-center">{el.quantity}</td>
-                  <td className="py-1 px-2 text-center">{el.sold}</td>
-                  <td className="py-1 px-2 text-sm">{el.color}</td>
-                  <td className="py-1 px-2 text-sm text-center">
-                    {el?.varients?.length || 0}
-                  </td>
-                  <td className="py-1 px-2 text-center">{el.totalRatings}</td>
-                  <td className="py-1 px-2">
-                    {moment(el.createdAt).format("DD/MM/YYYY")}
-                  </td>
-                  <td className="py-1 px-2 text-center ">
-                    <span className="flex gap-2">
-                      <span
-                        onClick={() => setEditProducts(el)}
-                        className="text-blue-500 hover:underline cursor-pointer italic hover:text-orange-400"
-                      >
-                        <AiOutlineEdit size={"20"} />
-                      </span>
-                      <span
-                        onClick={() => handleDelete(el._id)}
-                        className="text-blue-500 hover:underline cursor-pointer italic hover:text-orange-400"
-                      >
-                        <AiOutlineDelete size={"20"} />
-                      </span>
-                      <span
-                        onClick={() => setVarientsProducts(el)}
-                        className="text-blue-500 hover:underline cursor-pointer italic hover:text-orange-400"
-                      >
-                        <AiOutlineDeploymentUnit size={"20"} />
-                      </span>
-                    </span>
-                  </td> */}
+                <td className="py-1 px-2 text-center ">
+                  <span
+                    onClick={() => handleOrderUser(el._id)}
+                    className="text-blue-500 hover:underline cursor-pointer italic hover:text-main"
+                  >
+                    <AiOutlineDelete size={"20"} />
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>

@@ -177,9 +177,18 @@ const getByAdminOrder = asyncHandler(async (req, res) => {
     rs: response ? response : "Something went wrong",
   });
 });
+const deleteOrder = asyncHandler(async (req, res) => {
+  const { orId } = req.params;
+  const deleteOrder = await Order.findByIdAndDelete(orId);
+  return res.status(200).json({
+    success: deleteOrder ? true : false,
+    mes: deleteOrder ? "Delete successful" : "Cannot delete Order",
+  });
+});
 module.exports = {
   createOrder,
   updateStatus,
   getOrderUser,
   getByAdminOrder,
+  deleteOrder,
 };

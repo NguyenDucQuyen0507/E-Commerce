@@ -3,7 +3,7 @@ const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const { v4: uuidv4 } = require("uuid");
 const createProducts = asyncHandler(async (req, res) => {
-  const { title, price, description, brand, category, color } = req.body;
+  const { title, price, description, brand, categoryry, color } = req.body;
   const thumb = req?.files?.thumb[0]?.path;
   //.path là vì trong files chứa nhìu key mà key path là key lưu đường dẫn ảnh
   // console.log(req.files);
@@ -105,7 +105,7 @@ const getProducts = asyncHandler(async (req, res) => {
     const orConditions = [
       { title: { $regex: queries.q, $options: "i" } },
       { brand: { $regex: queries.q, $options: "i" } },
-      { catego: { $regex: queries.q, $options: "i" } },
+      { category: { $regex: queries.q, $options: "i" } },
       { color: { $regex: queries.q, $options: "i" } },
     ];
     searchProducts = { $or: orConditions };

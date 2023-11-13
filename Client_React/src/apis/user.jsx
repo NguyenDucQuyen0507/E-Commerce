@@ -74,3 +74,8 @@ export const apiLogout = () =>
     url: "/user/logout",
     method: "GET",
   });
+export const apiWishlist = (pid) =>
+  axios({
+    url: "/user/wishlist/" + pid,
+    method: "PATCH",
+  });

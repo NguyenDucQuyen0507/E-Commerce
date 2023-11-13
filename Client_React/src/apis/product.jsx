@@ -54,3 +54,8 @@ export const apiGetUserOrder = (params) =>
     method: "GET",
     params,
   });
+export const apiDeleteUserOrder = (orId) =>
+  axios({
+    url: "/order/" + orId,
+    method: "DELETE",
+  });

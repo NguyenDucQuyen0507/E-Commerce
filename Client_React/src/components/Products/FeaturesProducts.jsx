@@ -1,10 +1,21 @@
 import React, { memo } from "react";
 import { renderStarNumber } from "utils/helpers";
 import numeral from "numeral";
+import withBaseComponent from "hocs/withBaseComponent";
 
-const FeaturesProducts = ({ featuredProduct }) => {
+const FeaturesProducts = ({ featuredProduct, navigate }) => {
+  console.log(featuredProduct);
   return (
-    <div className="w-1/3 flex-auto px-[10px] ">
+    <div
+      onClick={(e) =>
+        navigate(
+          `/${featuredProduct?.category.toLowerCase()}/${featuredProduct._id}/${
+            featuredProduct.title
+          }`
+        )
+      }
+      className="w-1/3 flex-auto px-[10px] cursor-pointer"
+    >
       <div className="border p-[15px] gap-4 flex items-center mb-[20px]">
         <img
           src={featuredProduct?.thumb}
@@ -29,4 +40,4 @@ const FeaturesProducts = ({ featuredProduct }) => {
   );
 };
 
-export default memo(FeaturesProducts);
+export default withBaseComponent(memo(FeaturesProducts));

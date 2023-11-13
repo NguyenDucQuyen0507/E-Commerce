@@ -212,7 +212,8 @@ const getCurrent = asyncHandler(async (req, res) => {
         path: "product",
         select: "thumb title price",
       },
-    });
+    })
+    .populate("wishlist", "title thumb price color");
   return res.status(200).json({
     success: user ? true : false,
     rs: user ? user : "User not found",
@@ -586,6 +587,40 @@ const removeProductCart = asyncHandler(async (req, res) => {
     mes: response ? "Removed your cart" : "Something went wrong",
   });
 });
+
+const wishLishUser = asyncHandler(async (req, res) => {
+  const { id } = req.user;
+  const { pid } = req.params;
+  //tìm ra id của người dùng đó truowcsc khi so sánh wishlish của họ
+  const user = await User.findById(id);
+  const alreadyWishLish = user.wishlist?.find((el) => el.toString() === pid);
+  if (alreadyWishLish) {
+    //xóa id đó ra khỏi danh sách wishlist của người dùng đó.
+    const response = await User.findByIdAndUpdate(
+      id,
+      {
+        $pull: { wishlist: pid },
+      },
+      { new: true }
+    );
+    return res.json({
+      success: response ? true : false,
+      mes: response ? "Updated your wishlish" : "Updated failed wishlist",
+    });
+  } else {
+    const response = await User.findByIdAndUpdate(
+      id,
+      {
+        $push: { wishlist: pid },
+      },
+      { new: true }
+    );
+    return res.json({
+      success: response ? true : false,
+      mes: response ? "Updated your wishlish" : "Updated failed wishlist",
+    });
+  }
+});
 module.exports = {
   createUser,
   register,
@@ -603,4 +638,5 @@ module.exports = {
   updateUsersAddress,
   updateUserCart,
   removeProductCart,
+  wishLishUser,
 };

@@ -14,8 +14,6 @@ router.post("/forgotpassword", ctrl.forgotPassword);
 router.patch("/resetpassword", ctrl.resetPassword);
 //có quyfen role = "admin" mới được get hết user
 router.get("/", [verifyAccessToken, isAdmin], ctrl.getUsers);
-//có quyềm role =  "admin" mới dc xóa
-router.delete("/:uid", [verifyAccessToken, isAdmin], ctrl.deleteUsers);
 //update chính nó
 router.patch(
   "/current",
@@ -32,10 +30,12 @@ router.delete(
   [verifyAccessToken],
   ctrl.removeProductCart
 );
+router.patch("/finalregister/:token", ctrl.finalRegister);
+router.patch("/wishlist/:pid", [verifyAccessToken], ctrl.wishLishUser);
 //update by admin
 router.patch("/:uid", [verifyAccessToken, isAdmin], ctrl.updateUsersByAdmin);
-router.patch("/finalregister/:token", ctrl.finalRegister);
-
+//có quyềm role =  "admin" mới dc xóa
+router.delete("/:uid", [verifyAccessToken, isAdmin], ctrl.deleteUsers);
 module.exports = router;
 
 //Create + Put => body (dấu dữ liệu)
