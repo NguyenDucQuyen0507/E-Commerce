@@ -4,7 +4,6 @@ import numeral from "numeral";
 import withBaseComponent from "hocs/withBaseComponent";
 
 const FeaturesProducts = ({ featuredProduct, navigate }) => {
-  console.log(featuredProduct);
   return (
     <div
       onClick={(e) =>

@@ -1275,3 +1275,9 @@ B3 ta cũng tạo routers cho nó và bên client ta cũng tọa một apis cho 
 B4 Sang component productSellers khi click vào wishlist thì ta sẽ gọi apis đó thì ta truyền vào pid của sp đó và nếu thành công thì dispatch lại getCurrent để cập nhật wishlish.
 
 B5 Bây h ta sang component Wishlist để render các wishlish đã ddwjocj thêm vào
+  - Ta lấy current từ redux
+  - Sau đó từ current ta chấm đến trường wishlish và ta map trong wishlish ra và lấy giá trị đó truyền vào component ProductSellers vì ProductSellers là một card chứa tất cả các thông tin của sp.
+  -Ở ProductSellers ta kt id sp đó đã được wishlish chưa nếu có thì cho nó màu đỏ.
+      color={current?.wishlist?.some((i) => i._id === productData?._id)? "red": ""}
+
+Bài 89 Fix Home Page
