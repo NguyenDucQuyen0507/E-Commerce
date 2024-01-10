@@ -1,6 +1,13 @@
 import React, { memo } from "react";
 
-const SelectQuanity = ({ value, hanldeQuantity, handleChangeQuantity }) => {
+const SelectQuanity = ({
+  value,
+  hanldeQuantity,
+  handleChangeQuantity,
+  quantity,
+}) => {
+  console.log(value);
+  console.log(quantity);
   return (
     <div className="flex gap-4 items-center">
       <div className="w-[150px] h-[40px]  flex justify-between items-center">
@@ -20,7 +27,9 @@ const SelectQuanity = ({ value, hanldeQuantity, handleChangeQuantity }) => {
         />
         <span
           onClick={() => handleChangeQuantity("plus")}
-          className="border-l w-[50px] text-center cursor-pointer"
+          className={`border-l w-[50px] text-center cursor-pointer ${
+            +value === +quantity ? "cursor-text" : ""
+          }`}
         >
           +
         </span>

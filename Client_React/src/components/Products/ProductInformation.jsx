@@ -79,7 +79,7 @@ const ProductInformation = ({
           </span>
         ))}
       </div>
-      <div className=" w-full border p-3">
+      <div className="w-full border p-3">
         {productInfomation.some((el) => el.id === active) &&
           productInfomation.find((el) => el.id === active)?.content}
       </div>

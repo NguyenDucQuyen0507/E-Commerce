@@ -15,7 +15,7 @@ const AdminLayout = () => {
         <SideBarAdmin />
       </div>
       <div className="w-[330px] flex-none"></div>
-      <div className="flex-auto h-full ">
+      <div className="flex-auto min-h-screen w-full overflow-x-hidden">
         <Outlet />
       </div>
     </div>

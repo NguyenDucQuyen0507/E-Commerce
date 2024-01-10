@@ -10,8 +10,8 @@ const MemberLayout = () => {
     return <Navigate to={`/${path.LOGIN}`} replace={true} />;
   }
   return (
-    <div className="flex min-h-screen w-full">
-      <div className="w-[330px] flex-none">
+    <div className="flex min-h-screen w-full ">
+      <div className="w-[330px] flex-none ">
         <SideBarMember />
       </div>
       <div className="flex-auto bg-gray-100 min-h-screen overflow-hidden ">

@@ -54,6 +54,12 @@ export const apiGetUserOrder = (params) =>
     method: "GET",
     params,
   });
+export const apiGetAllOrder = (params) =>
+  axios({
+    url: "/order/admin/",
+    method: "GET",
+    params,
+  });
 export const apiDeleteUserOrder = (orId) =>
   axios({
     url: "/order/" + orId,

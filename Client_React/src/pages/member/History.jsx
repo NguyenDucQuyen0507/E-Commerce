@@ -1,5 +1,5 @@
-import { apiDeleteUserOrder, apiGetUserOrder } from "apis/product";
-import { CustomSelectOrderHistory, InputField, Pagination } from "components";
+import { apiGetUserOrder } from "apis/product";
+import { CustomSelectOrderHistory, Pagination } from "components";
 import React, { useState, useEffect } from "react";
 import { createSearchParams, useSearchParams } from "react-router-dom";
 import moment from "moment";
@@ -7,10 +7,6 @@ import numeral from "numeral";
 import { optionsChoose } from "utils/contants";
 import { useForm } from "react-hook-form";
 import withBaseComponent from "hocs/withBaseComponent";
-import { AiOutlineDelete } from "react-icons/ai";
-import Swal from "sweetalert2";
-import { toast } from "react-toastify";
-import useDebouce from "hooks/useDebouce";
 const History = ({ navigate, location }) => {
   const [params] = useSearchParams();
   console.log([...params]);
@@ -20,7 +16,6 @@ const History = ({ navigate, location }) => {
   const [queries, setQueries] = useState({
     q: "",
   });
-  const [render, setRender] = useState(false);
   const {
     handleSubmit,
     watch,
@@ -31,42 +26,19 @@ const History = ({ navigate, location }) => {
     const response = await apiGetUserOrder({
       ...params,
       limit: process.env.REACT_APP_LIMIT,
+      sort: "-createdAt",
     });
-    console.log(response);
     if (response.success) {
       setOrders(response.orders);
       setCount(response.counts);
     }
   };
   const handleChangeStatus = (value) => {
-    // console.log(value);
     navigate({
       pathname: location.pathname,
       search: createSearchParams({ status: value.value }).toString(),
     });
   };
-  const handleOrderUser = (orId) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You want to delete this order?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        const response = await apiDeleteUserOrder(orId);
-        if (response.success) {
-          re_render();
-          toast.success(response.mes);
-        } else {
-          toast.error(response.mes);
-        }
-      }
-    });
-  };
-
   // const queriesDebouce = useDebouce(queries.q, 800);
   // useEffect(() => {
   //   if (queriesDebouce) {
@@ -81,16 +53,15 @@ const History = ({ navigate, location }) => {
   //     });
   //   }
   // }, [queriesDebouce]);
-
-  const re_render = () => {
-    // có sự thay đổi nó mới re-render lại order để cập nhật lại
-    setRender(!render);
-  };
   useEffect(() => {
     const qr = Object.fromEntries([...params]);
     fetchOrder(qr);
-  }, [params, render]);
+  }, [params]);
   const status = watch("status");
+  console.log(status);
+  const handleNavigateProduct = (data) => {
+    navigate(`/products`);
+  };
   return (
     <div className="w-full p-8 min-h-screen">
       <div className="bg-gray-100 flex justify-center items-center h-[50px]">
@@ -114,6 +85,7 @@ const History = ({ navigate, location }) => {
             </div>
             <div className="col-span-1 flex items-center">
               <CustomSelectOrderHistory
+                placeholder={"Status ..."}
                 options={optionsChoose}
                 value={status}
                 onChange={(val) => handleChangeStatus(val)}
@@ -170,12 +142,12 @@ const History = ({ navigate, location }) => {
                 <td className="py-1 px-2 text-sm">
                   {moment(el.createdAt).format("DD/MM/YYYY")}
                 </td>
-                <td className="py-1 px-2 text-center ">
-                  <span
-                    onClick={() => handleOrderUser(el._id)}
-                    className="text-blue-500 hover:underline cursor-pointer italic hover:text-main"
-                  >
-                    <AiOutlineDelete size={"20"} />
+                <td
+                  onClick={() => handleNavigateProduct(el)}
+                  className="py-1 px-2"
+                >
+                  <span className="text-blue-500 hover:underline cursor-pointer italic ">
+                    Products
                   </span>
                 </td>
               </tr>

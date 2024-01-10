@@ -18,6 +18,7 @@ import {
 import useDebouce from "hooks/useDebouce";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
+import numeral from "numeral";
 const ManageProducts = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,6 +62,7 @@ const ManageProducts = () => {
   // => Luồng chạy sẽ là khi ta truyền lên url gia trị tìm kiếm mà ta đang ở page 4, khi đó params thay đổi thì useeffect gọi apis product sẽ được gọi lại và nó sẽ trở về lại page1 để hiển thị sp vừa tìm kiếm (để tránh trường hợp ta đang pag4 mà sp chỉ đủ cho pag2 làm cho sp không hiển thị được.)
   useEffect(() => {
     const queries = Object.fromEntries([...params]);
+    console.log(queries);
     fetchProduct(queries);
   }, [params, render]);
   const handleSearchProduct = (data) => {
@@ -154,24 +156,26 @@ const ManageProducts = () => {
                         1
                       : index + 1}
                   </td>
-                  <td className="py-1 px-2 text-sm">{el.title}</td>
-                  <td className="py-1 px-2">
+                  <td className="py-3 px-2 text-sm">{el.title}</td>
+                  <td className="py-3 px-2">
                     <img src={el.thumb} alt="thumbnail" width={"70px"} />
                   </td>
-                  <td className="py-1 px-2 text-sm uppercase">{el.brand}</td>
-                  <td className="py-1 px-2 text-sm">{el.category}</td>
-                  <td className="py-1 px-2">{el.price}</td>
-                  <td className="py-1 px-2 text-center">{el.quantity}</td>
-                  <td className="py-1 px-2 text-center">{el.sold}</td>
-                  <td className="py-1 px-2 text-sm">{el.color}</td>
-                  <td className="py-1 px-2 text-sm text-center">
+                  <td className="py-3 px-2 text-sm uppercase">{el.brand}</td>
+                  <td className="py-3 px-2 text-sm">{el.category}</td>
+                  <td className="py-3 px-2">
+                    {numeral(el.price).format("0,0$")}
+                  </td>
+                  <td className="py-3 px-2 text-center">{el.quantity}</td>
+                  <td className="py-3 px-2 text-center">{el.sold}</td>
+                  <td className="py-3 px-2 text-sm">{el.color}</td>
+                  <td className="py-3 px-2 text-sm text-center">
                     {el?.varients?.length || 0}
                   </td>
-                  <td className="py-1 px-2 text-center">{el.totalRatings}</td>
-                  <td className="py-1 px-2">
+                  <td className="py-3 px-2 text-center">{el.totalRatings}</td>
+                  <td className="py-3 px-2">
                     {moment(el.createdAt).format("DD/MM/YYYY")}
                   </td>
-                  <td className="py-1 px-2 text-center ">
+                  <td className="py-3 px-2 text-center ">
                     <span className="flex gap-2">
                       <span
                         onClick={() => setEditProducts(el)}

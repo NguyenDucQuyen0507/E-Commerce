@@ -1281,3 +1281,55 @@ B5 Bây h ta sang component Wishlist để render các wishlish đã ddwjocj th�
       color={current?.wishlist?.some((i) => i._id === productData?._id)? "red": ""}
 
 Bài 89 Fix Home Page
+Fix 1 là ở trang Home ta fix phần featureProducts là khi ta click vào thì nó sẽ sẽ chuyển đến trang detail của sp đó 
+navigate(`/${featuredProduct?.category.toLowerCase()}/${featuredProduct._id}/${featuredProduct.title}`).
+
+Fix 2 là ở phần collection khi ta click vào thì nó chuyển đến trang Products với category và brand được truyền từ Client.
+  B1 Trong trang Home.jsx ta dùng categories được lấy từ productCategories và ta map ra trong phần map từ brand ta dùng naviagte để tạo một object chứa 2 key là pathname và search trong đó pathname thì dùng để chuyển đén trang có categories đó. Còn pathname là ta tạo một key để truyền giá trị và server sẽ nhận giá trị đó và tìm kiếm.
+  B2 Thì trong Server của product ta thêm một tìm kiếm brand nữa 
+      if (queries?.brand) {
+        formatedQueries.brand = { $regex: queries.brand, $options: "i" };
+      }
+  Vì trong lúc truyền xuống server nó truyền categories và brand nên nó sẽ kết hợp với brand để nó tìm kiếm sp có categories và brand đó.
+
+  Fix lỗi khi click vào mà nó không tự scroll lên đầu trang (chưa được)
+
+  Fix lỗi DealDaily để nó xuất hiện sản phẩm có sao nhìu nhất.
+   const response = await apiGetProduct({
+    //lấy trong 20 sp đầu tiên
+      limit: 20,
+      sort: "-totalRatings",
+    });
+    Và khi lưu vào trong useState ta dùng kết quả nhận được làm tròn và nhân cho limit
+    setDailiProduct(response.products[Math.round(Math.random() * 20)]);
+
+ * Fix bug khi mua hàng thành công thì nó sẽ trừ số     lượng tồn kho của sp đó và khi ta click tăng sp vượt quá tồn kho thì không cho tăng nữa.
+   B1 Trong Server của controller Order khi ta đã lấy được products từ Checkout truyền cho Paypal thì trong products có số lượng mà khách hàng đã chọn.
+   b2 Ta dùng for of để lấy giá trị từ products đó ra. Ta lấy id của sp đó từ product và lấy quantity của nó ra
+   for (const productSold of products) {
+    const soldId = productSold.product._id;
+    const quantity = productSold.quantity;
+    await Product.findByIdAndUpdate(
+      soldId,
+      {
+        $inc: { quantity: -quantity, sold: quantity },
+      },
+      { new: true }
+    );
+  }
+  B3 Sau khi lấy xong ta sẽ Update cho Product với id đã tìm được và quantity. Ta dùng $inc trong mongosee nó dùng để tăng giảm số lượng của field dc chỉ định dấu - là nó sẽ trừ số lượng quantity đã tìm được.
+  B4 new:true để cập nhật giá trị mới nhất
+
+   - Làm tính năng tăng số lượng sản phẩm của khách hàng không vượt quá số lượng stock của sp đó
+  B1 trong productDetails khi ta click vào "plus nghĩa là cộng"  thì ta sẽ bắt nó có bằng với stock của sp đó không.
+  if (flag === "plus") {
+      if (+quantity === +product.quantity) {
+        window.alert("Quantity exceeds stock product");
+        return;
+      }
+    setQuantity((prev) => +prev + 1);
+  }
+  Lưu ý trong dependencive của useCallBack ta thêm product vì có nó, nới mới re-render để có bắt quantity của sp đó
+  [+quantity, product]
+  
+  

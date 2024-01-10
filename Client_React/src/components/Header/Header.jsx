@@ -76,7 +76,7 @@ const Header = () => {
               {isShowOption && (
                 <div
                   onClick={(e) => e.stopPropagation()}
-                  className="absolute flex flex-col gap-1 top-full bg-gray-300 left-[5px] min-w-[160px] rounded-md overflow-hidden"
+                  className="absolute flex flex-col gap-1 top-full bg-gray-300 left-[5px] min-w-[160px] rounded-md overflow-hidden z-30"
                 >
                   <Link
                     to={`/${path.MEMBER}/${path.PERSONAL}`}

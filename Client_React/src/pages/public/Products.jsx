@@ -18,7 +18,7 @@ import Masonry from "react-masonry-css";
 const Products = () => {
   const navigate = useNavigate();
   const { category } = useParams();
-  console.log(category);
+  // console.log(category);
   //lấy các giá trị param
   const [params] = useSearchParams();
   console.log([...params]);

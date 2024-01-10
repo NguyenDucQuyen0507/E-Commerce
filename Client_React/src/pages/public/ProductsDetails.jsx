@@ -51,6 +51,24 @@ const ProductsDetails = ({
   });
   const [pid, setPid] = useState(null);
   const [category, setCategory] = useState(null);
+  const handleChangeQuantity = useCallback(
+    (flag) => {
+      if (flag === "minute") {
+        if (+quantity === 1) {
+          return;
+        }
+        setQuantity((prev) => +prev - 1);
+      }
+      if (flag === "plus") {
+        if (+quantity === +product.quantity) {
+          window.alert("Quantity exceeds stock product");
+          return;
+        }
+        setQuantity((prev) => +prev + 1);
+      }
+    },
+    [+quantity, product]
+  );
   const hanldeQuantity = useCallback(
     (number) => {
       if (!Number(number) || Number(number) < 1) {
@@ -59,23 +77,8 @@ const ProductsDetails = ({
         setQuantity(number);
       }
     },
-    [quantity]
+    [+quantity]
   );
-  const handleChangeQuantity = useCallback(
-    (flag) => {
-      if (flag === "minute") {
-        if (quantity === 1) {
-          return;
-        }
-        setQuantity((prev) => +prev - 1);
-      }
-      if (flag === "plus") {
-        setQuantity((prev) => +prev + 1);
-      }
-    },
-    [quantity]
-  );
-
   const handleAddToCart = async () => {
     if (!current) {
       Swal.fire({
@@ -183,7 +186,7 @@ const ProductsDetails = ({
       fetchProduct();
     }
   }, [rerender]);
-
+  console.log(product);
   const handleClickImage = (e, el) => {
     e.stopPropagation();
     setCurrentImages(el);
@@ -360,7 +363,8 @@ const ProductsDetails = ({
           <div className="flex gap-3">
             <span className="text-xs font-semibold">Quantity</span>
             <SelectQuanity
-              value={quantity}
+              value={+quantity}
+              quantity={product?.quantity}
               hanldeQuantity={hanldeQuantity}
               handleChangeQuantity={handleChangeQuantity}
             />

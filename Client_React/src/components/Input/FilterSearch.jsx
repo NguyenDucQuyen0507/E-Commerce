@@ -13,7 +13,6 @@ import { useEffect } from "react";
 import numeral from "numeral";
 const FilterSearch = ({ name, active, handleActive, type = "checkbox" }) => {
   const [params] = useSearchParams();
-  console.log(params);
   const { category } = useParams();
   const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
@@ -68,7 +67,7 @@ const FilterSearch = ({ name, active, handleActive, type = "checkbox" }) => {
   }, [type]);
   //kt from phải nhỏ hơn to
   useEffect(() => {
-    if (+price.from && +price.to && +price.from > +price.to) {
+    if (+price.from && +price.to > +price.to) {
       alert("From price cannot greater than To price");
     }
   }, [price]);

@@ -15,7 +15,7 @@ const CustomSelectOrderHistory = ({
       {label && <h3 className="">{label}</h3>}
       <Select
         placeholder={placeholder}
-        isClearable
+        // isClearable
         options={options}
         value={value}
         isSearchable

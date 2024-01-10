@@ -10,14 +10,14 @@ import { toast } from "react-toastify";
 import { getBase64 } from "utils/helpers";
 import { useSearchParams } from "react-router-dom";
 import withBaseComponent from "hocs/withBaseComponent";
-const Persional = ({ navigate }) => {
+const Persional = ({ navigate, dispatch }) => {
   const { current } = useSelector((state) => state.user);
   const [params] = useSearchParams();
   const [preview, setPreview] = React.useState({
     thumb: null,
   });
   console.log(params.get("redirect"));
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const {
     reset,
     watch,

@@ -15,13 +15,13 @@ import {
 } from "redux-persist";
 
 const commonConfig = {
-  key: "shop/user",
   storage,
 };
 const userConfig = {
   ...commonConfig,
   //Lưu những giá trị mà localStorge muốn lưu, ta lấy 3 trường trong userSlice
   whitelist: ["isLoggedIn", "token", "current", "currentCart"],
+  key: "shop/user",
 };
 export const store = configureStore({
   reducer: {

@@ -35,9 +35,7 @@ const ManageUser = () => {
   });
   const [editElm, setEditElm] = useState(null);
   const [update, setUpdate] = useState(false);
-
   const [params] = useSearchParams();
-  // console.log(params);
   const fetchUsers = async (params) => {
     const response = await apiGetUsers({
       ...params,
@@ -56,10 +54,11 @@ const ManageUser = () => {
     // Sau truyền nó xuống server và server nhận và xủ lý
     fetchUsers(queries);
   }, [queriesDebounce, params, update]);
-  // console.log(editElm);
+
   const renderUpdate = useCallback(() => {
     setUpdate(!update);
   }, [update]);
+
   const handleUpdate = async (data) => {
     // console.log(data);
     const response = await apiUpdateUsers(data, editElm?._id);
@@ -94,6 +93,7 @@ const ManageUser = () => {
       }
     });
   };
+  console.log("edit", editElm);
   return (
     <div className={clsx("w-full px-4")}>
       <h1 className="h-[50px] font-semibold text-[25px] flex items-center opacity-[0.7]">

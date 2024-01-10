@@ -15,9 +15,8 @@ const DealDaily = () => {
   const [time, setTime] = useState(false);
   const fetchProducts = async () => {
     const response = await apiGetProduct({
-      limit: 1,
-      page: Math.round(Math.random() * 5),
-      totalRatings: 5,
+      limit: 20,
+      sort: "-totalRatings",
     });
     //trong  serer mình đã check lấy sp, limit ở đây là muốn lấy bao nhiu sp và ở trang nào
     //ta random để nó lấy sp ở trang khác
@@ -26,7 +25,7 @@ const DealDaily = () => {
     // const m = 60 - new Date().getMinutes();
     // const s = 60 - new Date().getSeconds();
     if (response.success) {
-      setDailiProduct(response.products[0]);
+      setDailiProduct(response.products[Math.round(Math.random() * 20)]);
       //lấy 5h ngày hôm nay lam cot moc
       const today = `${moment().format("MM/DD/YYYY")} 5:00:00`;
       //tính số s trong 5h ngày hôm nay + cho 1 ngày nghĩa là lúc này nó là 5h của ngày hôm sau

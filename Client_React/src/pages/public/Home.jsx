@@ -8,7 +8,9 @@ import {
   CustomSlide,
 } from "../../components";
 import { IoIosArrowForward } from "react-icons/io";
-const Home = () => {
+import withBaseComponent from "hocs/withBaseComponent";
+import { createSearchParams } from "react-router-dom";
+const Home = ({ navigate }) => {
   const { newProducts } = useSelector((state) => state.products);
   const { categories } = useSelector((state) => state.app);
   return (
@@ -58,14 +60,22 @@ const Home = () => {
                         {el.title}
                       </h2>
                       <ul>
-                        {el.brand.map((el, index) => (
-                          <li
-                            className="text-gray-400 flex items-center text-[14px]"
+                        {el.brand.map((e, index) => (
+                          <span
+                            onClick={() => {
+                              navigate({
+                                pathname: `/${el.title.toLowerCase()}`,
+                                search: createSearchParams({
+                                  brand: e.toLowerCase(),
+                                }).toString(),
+                              });
+                            }}
+                            className="text-gray-400 flex items-center text-[14px] cursor-pointer hover:underline"
                             key={index}
                           >
                             <IoIosArrowForward />
-                            {el}
-                          </li>
+                            {e}
+                          </span>
                         ))}
                       </ul>
                     </div>
@@ -85,4 +95,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default withBaseComponent(Home);
