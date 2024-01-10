@@ -210,7 +210,7 @@ const getCurrent = asyncHandler(async (req, res) => {
       path: "cart",
       populate: {
         path: "product",
-        select: "thumb title price",
+        select: "thumb title price ",
       },
     })
     .populate("wishlist", "title thumb price color");

@@ -3,7 +3,7 @@ const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const { v4: uuidv4 } = require("uuid");
 const createProducts = asyncHandler(async (req, res) => {
-  const { title, price, description, brand, categoryry, color } = req.body;
+  const { title, price, description, brand, category, color } = req.body;
   const thumb = req?.files?.thumb[0]?.path;
   //.path là vì trong files chứa nhìu key mà key path là key lưu đường dẫn ảnh
   // console.log(req.files);
@@ -55,8 +55,9 @@ const getProducts = asyncHandler(async (req, res) => {
   );
   //ta sẽ thêm tiền tô $ vào trước các chữ ss như "gte,gt,lte,lt" =>$gte
   const formatedQueries = JSON.parse(queryString);
+  //* Ta cũng không cần chuyển đổi thành JSON rồi qua String ta chỉ cần tạo một object rỗng để lưu giá trị
+  // const formatedQueries = {};
   //Khi thực hiện xong thì mình phải truyền kiểu JSON đó về lại kiểu String để mình có thể truy vấn các trường bên trong nó
-
   //*Filtering
   if (queries?.title)
     //title là tên mình cần tìm
@@ -78,6 +79,9 @@ const getProducts = asyncHandler(async (req, res) => {
   //get theo category không phân biệt chữ hoa chữ thường
   if (queries?.category) {
     formatedQueries.category = { $regex: queries.category, $options: "i" };
+  }
+  if (queries?.brand) {
+    formatedQueries.brand = { $regex: queries.brand, $options: "i" };
   }
   // tìm kiếm theo nhiều color
   let colorQueryObject = {};
@@ -115,6 +119,7 @@ const getProducts = asyncHandler(async (req, res) => {
     ...colorQueryObject,
     ...searchProducts,
   };
+  console.log("query", generalQuery);
   let queryCommand = Product.find(generalQuery);
 
   //*Sorting

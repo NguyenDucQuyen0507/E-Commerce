@@ -14,7 +14,7 @@ const fn = async (product) => {
     price: Math.round(Number(product?.price?.match(/\d/g).join("")) / 100),
     //Đầu tiên nó .match là nó sẽ tách số ra thành string ("ádfgh1234567 => "1","2","3","4","5","6","7"), sau đó ta .join('') thành 1 string "1234567", Phương thức Number bao bên ngoài để gán nó thánh kiểu Number (1234567), cuối cùng là chia cho 100 là dể loại bỏ 2 số sau cùng
     category: product?.category[1],
-    //số lương mình random từ 0 tới 1000
+    //số lương mình random từ 0 tớ i 1000
     quantity: Math.round(Math.random() * 1000),
     sold: Math.round(Math.random() * 100),
     images: product?.images,

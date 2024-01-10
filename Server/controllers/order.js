@@ -1,8 +1,10 @@
 const Order = require("../models/order");
 const User = require("../models/users");
+const Product = require("../models/products");
 const Coupon = require("../models/coupon");
 
 const asyncHandler = require("express-async-handler");
+const { default: mongoose } = require("mongoose");
 
 // const createOrder = asyncHandler(async (req, res, next) => {
 //   const { id } = req.user;
@@ -55,6 +57,17 @@ const asyncHandler = require("express-async-handler");
 const createOrder = asyncHandler(async (req, res, next) => {
   const { id } = req.user;
   const { products, total, address, status } = req.body;
+  for (const productSold of products) {
+    const soldId = productSold.product._id;
+    const quantity = productSold.quantity;
+    await Product.findByIdAndUpdate(
+      soldId,
+      {
+        $inc: { quantity: -quantity, sold: quantity },
+      },
+      { new: true }
+    );
+  }
   if (address) {
     //Nếu có địa chỉ thì cập nhật đía chỉ và reset giỏ hàng về [] nếu đã thanh toán thành công.
     await User.findByIdAndUpdate(id, { address, cart: [] }, { new: true });
@@ -87,6 +100,73 @@ const updateStatus = asyncHandler(async (req, res) => {
     success: response ? true : false,
     rs: response ? response : "Something went wrong",
   });
+});
+const getAllOrder = asyncHandler(async (req, res) => {
+  const queries = { ...req.query };
+  const exculdeFields = ["limit", "sort", "page", "field"];
+  exculdeFields.forEach((item) => delete queries[item]);
+  let queryString = JSON.stringify(queries);
+  queryString = queryString.replace(
+    /\b(gte|gt|lte|lt)\b/g,
+    (match) => `$${match}`
+  );
+  const formatedQueries = JSON.parse(queryString);
+  const startDay = req.query.startDate
+    ? new Date(`${req.query.startDate}T00:00:00.000Z`)
+    : null;
+  const endDay = req.query.endDate
+    ? new Date(`${req.query.endDate}T23:59:59.999Z`)
+    : null;
+  const findDay = {};
+  if (startDay && endDay) {
+    findDay.createdAt = {
+      $gte: new Date(startDay),
+      $lte: new Date(endDay),
+    };
+  }
+  const query = { ...formatedQueries };
+  const dayQuery = { ...findDay };
+  let qr = {};
+  mongoose.set("debug", true);
+  if (startDay && endDay) {
+    qr = dayQuery;
+  } else {
+    qr = query;
+  }
+  let queryCommand = Order.find(qr).populate(
+    "orderBy",
+    "firstName lastName mobile"
+  );
+
+  //*Sorting
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(",").join(" ");
+    queryCommand = queryCommand.sort(sortBy);
+  }
+  //* Field Limiting là lấy các trường mình cần lấy
+  if (req.query.field) {
+    const field = req.query.field.split(",").join(" ");
+    //lấy giá trị value của key đó
+    queryCommand = queryCommand.select(field);
+  }
+
+  //* pagination
+  const page = +req.query.page || 1;
+  const limit = +req.query.limit || process.env.LIMIT_PRODUCTS;
+  const skip = (page - 1) * limit;
+  queryCommand.skip(skip).limit(limit);
+  try {
+    const response = await queryCommand.exec();
+    //đếm có bao nhiêu kq
+    const counts = await Order.find(qr).countDocuments();
+    return res.status(200).json({
+      counts,
+      success: response ? true : false,
+      orders: response ? response : "Cannot get product",
+    });
+  } catch (error) {
+    throw new Error(error.message);
+  }
 });
 //làm phần get đơn hàng cho chính nó cho đơn hàng
 const getOrderUser = asyncHandler(async (req, res) => {
@@ -169,6 +249,7 @@ const getOrderUser = asyncHandler(async (req, res) => {
     throw new Error(error.message);
   }
 });
+
 //làm phần get đơn hàng cho admin
 const getByAdminOrder = asyncHandler(async (req, res) => {
   const response = await Order.find();
@@ -189,6 +270,7 @@ module.exports = {
   createOrder,
   updateStatus,
   getOrderUser,
+  getAllOrder,
   getByAdminOrder,
   deleteOrder,
 };
