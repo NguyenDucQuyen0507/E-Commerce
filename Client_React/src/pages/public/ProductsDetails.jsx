@@ -10,7 +10,7 @@ import {
   CustomSlide,
 } from "../../components";
 import Slider from "react-slick";
-import ReactImageMagnify from "react-image-magnify";
+// import ReactImageMagnify from "react-image-magnify";
 import numeral from "numeral";
 import { renderStarNumber } from "../../utils/helpers";
 import { quality } from "../../utils/contants";
@@ -232,7 +232,8 @@ const ProductsDetails = ({
         <div className="flex-2 flex flex-col gap-4 w-full">
           {!isQuickView && (
             <div className="w-[458px] h-[458px] border object-cover flex items-center justify-center">
-              <ReactImageMagnify
+              <img src={currentProducts?.thumb || currentImages} alt="" />
+              {/* <ReactImageMagnify
                 {...{
                   smallImage: {
                     alt: "Wristwatch by Ted Baker London",
@@ -245,7 +246,7 @@ const ProductsDetails = ({
                     height: 1800,
                   },
                 }}
-              />
+              /> */}
             </div>
           )}
           {isQuickView && (
