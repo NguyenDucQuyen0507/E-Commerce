@@ -285,3 +285,4 @@ export const optionsChoose = [
     value: "Successed",
   },
 ];
+export const API_URL = "https://e-commerce-server-jqyv.onrender.com/api";
