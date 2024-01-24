@@ -3,7 +3,7 @@ import { generateRange } from "../utils/helpers";
 import { BsThreeDots } from "react-icons/bs";
 const usePagination = (totalProductCount, currentPage, siblingCount = 1) => {
   const paginationArray = useMemo(() => {
-    const pageSize = process.env.REACT_APP_LIMIT || 10;
+    const pageSize = +process.env.REACT_APP_LIMIT || 10;
     const paginationCount = Math.ceil(totalProductCount / pageSize);
     //paginationCount là số dùng để hiển thị ra sau khi tính 66/10 =>7
     const totalPaginationItem = siblingCount + 5;
