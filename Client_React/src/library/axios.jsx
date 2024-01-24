@@ -2,8 +2,8 @@
 import axios from "axios";
 import { API_URL } from "utils/contants";
 const instance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
-  // baseURL: API_URL,
+  // baseURL: process.env.REACT_APP_API_URL,
+  baseURL: API_URL,
   headers: {
     Accept: "application/json",
   },
